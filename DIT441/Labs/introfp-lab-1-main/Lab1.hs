@@ -47,33 +47,29 @@ power2 n k
 -- Part D ----------------------------------------------------------------------
 
 {- 
-    Comparison 1: power1 a b == power a b
-    Comparison 2: power2 a b == power a b
-
-    For each comparison:
-      test 1:
-          a == 2 
-          b == 3
-      test 2:
-          a == (-2) 
-          b == 3
-      test 3:
-          a == 0
-          b == 3
-      test 4:
-          a == 2
-          b == 0
+n k:
+- - | (-2) (-2) --> Error
++ - | 2 (-2)    --> Error
+- + | (-2) 2    --> 4
++ + | 2 2       --> 4
+0 k | 0 2       --> 0
+n 0 | 2 0       --> 1
+0 0 | 0 0       --> 1
 -}
 
 comparePower1 :: Integer -> Integer -> Bool
-comparePower1 n k =
-  if power1 n k == power n k then True
-  else False
+comparePower1 n k = power n k == power1 n k
 
 comparePower2 :: Integer -> Integer -> Bool
-comparePower2 n k =
-  if power2 n k == power n k then True
-  else False
+comparePower2 n k = power n k == power2 n k
+
+{- 
+The reasons to why we choose these particular tests is that we want to test all combinations 
+of base and exponent when they are less than zero, equal to zero and greater than zero, except for
+when the exponent is < 0, scince that would result in an error. (To check if all functions gives an error
+when exponent is < 0, one can check that individually).
+That leaves us with the following tests: [(-2,0),(-2,2),(0,0),(0,2),(2,0),(2,2)]
+-}
 
 testAll = putStrLn 
   ("Our tests are " ++ show([(x,y) | x <- [(-2),0,2], y <- [0,2]]) ++ "\n\n" ++
