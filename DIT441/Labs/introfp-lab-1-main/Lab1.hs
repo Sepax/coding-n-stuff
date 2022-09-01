@@ -75,11 +75,19 @@ comparePower2 n k =
   if power2 n k == power n k then True
   else False
 
-testAll = putStr ( "ComparisonPower1:\n     Test 1: " ++ (show (comparePower1 2 3))    ++ "\n" ++
-                                       "    Test 2: " ++ (show (comparePower1 (-2) 3)) ++ "\n" ++
-                                       "    Test 3: " ++ (show (comparePower1 0 3))    ++ "\n" ++
-                                       "    Test 4: " ++ (show (comparePower1 2 0))    ++ "\n" ++
-                   "ComparisonPower2:\n     Test 1: " ++ (show (comparePower2 2 3))    ++ "\n" ++
-                                       "    Test 2: " ++ (show (comparePower2 (-2) 3)) ++ "\n" ++
-                                       "    Test 3: " ++ (show (comparePower2 0 3))    ++ "\n" ++
-                                       "    Test 4: " ++ (show (comparePower2 2 0))    ++ "\n" )
+testAll = putStrLn 
+  ("Our tests are " ++ show([(x,y) | x <- [(-2),0,2], y <- [0,2]]) ++ "\n\n" ++
+  "ComparisionPower1:" ++ "\n" ++ 
+  "Test 1: " ++ (show(comparePower1 (-2) 0)) ++ "\n" ++
+  "Test 2: " ++ (show(comparePower1 (-2) 2)) ++ "\n" ++
+  "Test 3: " ++ (show(comparePower1 0 0)) ++ "\n" ++
+  "Test 4: " ++ (show(comparePower1 0 2)) ++ "\n" ++
+  "Test 5: " ++ (show(comparePower1 2 0)) ++ "\n" ++
+  "Test 6: " ++ (show(comparePower1 2 2)) ++ "\n\n" ++
+  "ComparisionPower2:" ++ "\n" ++
+  "Test 1: " ++ (show(comparePower2 (-2) 0)) ++ "\n" ++
+  "Test 2: " ++ (show(comparePower2 (-2) 2)) ++ "\n" ++
+  "Test 3: " ++ (show(comparePower2 0 0)) ++ "\n" ++
+  "Test 4: " ++ (show(comparePower2 0 2)) ++ "\n" ++
+  "Test 5: " ++ (show(comparePower2 2 0)) ++ "\n" ++
+  "Test 6: " ++ (show(comparePower2 2 2)) ++ "\n")
