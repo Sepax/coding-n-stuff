@@ -28,6 +28,8 @@ stepsPower k = k
 
 
 -- Part B ----------------------------------------------------------------------
+
+-- Uses list comprehention to calculate the power of n^k using the prelude function product
 power1 :: Integer -> Integer -> Integer
 power1 n k
   | k < 0 = error "power: negative argument"
@@ -37,25 +39,17 @@ power1 n k = product [n | _ <- [1..k]]
 
 -- Part C ----------------------------------------------------------------------
 
+{- Power2 uses less calculations than power1. When k is even, we take advantage of power laws to divide k in half.
+When k is odd, we use the original recursive method.
+-}
 power2 :: Integer -> Integer -> Integer
 power2 n k
   | k < 0 = error "power: negative argument"
   | k == 0 = 1
-  | even k = power2 (n*n) (div k k)
+  | even k = power2 (n*n) (div k 2)
   | odd k = n * (power2 n (k-1))
 
 -- Part D ----------------------------------------------------------------------
-
-{- 
-n k:
-- - | (-2) (-2) --> Error
-+ - | 2 (-2)    --> Error
-- + | (-2) 2    --> 4
-+ + | 2 2       --> 4
-0 k | 0 2       --> 0
-n 0 | 2 0       --> 1
-0 0 | 0 0       --> 1
--}
 
 comparePower1 :: Integer -> Integer -> Bool
 comparePower1 n k = power n k == power1 n k
@@ -71,6 +65,7 @@ when exponent is < 0, one can check that individually).
 That leaves us with the following tests: [(-2,0),(-2,2),(0,0),(0,2),(2,0),(2,2)]
 -}
 
+testAll :: IO()
 testAll = putStrLn 
   ("Our tests are " ++ show([(x,y) | x <- [(-2),0,2], y <- [0,2]]) ++ "\n\n" ++
   "ComparisionPower1:" ++ "\n" ++ 
