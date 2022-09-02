@@ -43,7 +43,7 @@ sizeSteps = [ size aHand
 
 -- TASK A2
 
--- Finds and replaces string with another string in a list https://bluebones.net/2007/01/replace-in-haskell/ (Used to remove )
+-- Finds and replaces string with another string in a list https://bluebones.net/2007/01/replace-in-haskell/ (Used to remove "Numeric" in Rank)
 replace :: Eq a => [a] -> [a] -> [a] -> [a]
 replace [] _ _ = []
 replace s find repl =
