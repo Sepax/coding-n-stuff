@@ -64,21 +64,11 @@ when the exponent is < 0, scince that would result in an error. (To check if all
 when exponent is < 0, one can check that individually).
 That leaves us with the following tests: [(-2,0),(-2,2),(0,0),(0,2),(2,0),(2,2)]
 -}
+-- Defining all testcases
 
-testAll :: IO()
-testAll = putStrLn 
-  ("Our tests are " ++ show([(x,y) | x <- [(-2),0,2], y <- [0,2]]) ++ "\n\n" ++
-  "ComparisionPower1:" ++ "\n" ++ 
-  "Test 1: " ++ (show(comparePower1 (-2) 0)) ++ "\n" ++
-  "Test 2: " ++ (show(comparePower1 (-2) 2)) ++ "\n" ++
-  "Test 3: " ++ (show(comparePower1 0 0)) ++ "\n" ++
-  "Test 4: " ++ (show(comparePower1 0 2)) ++ "\n" ++
-  "Test 5: " ++ (show(comparePower1 2 0)) ++ "\n" ++
-  "Test 6: " ++ (show(comparePower1 2 2)) ++ "\n\n" ++
-  "ComparisionPower2:" ++ "\n" ++
-  "Test 1: " ++ (show(comparePower2 (-2) 0)) ++ "\n" ++
-  "Test 2: " ++ (show(comparePower2 (-2) 2)) ++ "\n" ++
-  "Test 3: " ++ (show(comparePower2 0 0)) ++ "\n" ++
-  "Test 4: " ++ (show(comparePower2 0 2)) ++ "\n" ++
-  "Test 5: " ++ (show(comparePower2 2 0)) ++ "\n" ++
-  "Test 6: " ++ (show(comparePower2 2 2)) ++ "\n")
+ 
+testCases :: Integer -> Integer -> Bool
+testCases n k = comparePower1 n k  && comparePower2 n k
+
+testAll :: Bool
+testAll = and[testCases x y | x <- [- 2,0,2], y <- [0,2]]
