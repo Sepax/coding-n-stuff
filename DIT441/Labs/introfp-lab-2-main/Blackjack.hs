@@ -3,7 +3,7 @@ module Blackjack where
 import Cards
 import RunGame
 
--- Test definitions
+-- Test cards
 
 cardOf2 :: Card
 cardOf2 = Card (Numeric 2) Hearts
@@ -17,6 +17,11 @@ cardOf8 = Card (Numeric 8) Hearts
 cardOfJack :: Card
 cardOfJack = Card Jack Spades
 
+cardOfAce :: Card
+cardOfAce = Card Ace Hearts
+
+-- Test hands
+
 aHand :: Hand
 aHand = [cardOf2, cardOfJack]
 
@@ -28,6 +33,9 @@ aBadHand = [cardOf4, cardOf2, cardOf2]
 
 aBustHand :: Hand
 aBustHand = [cardOfJack, cardOf8, cardOf8]
+
+anAceHand :: Hand
+anAceHand = [cardOfAce, cardOf8, cardOf8]
 
 -- TASK A1
 
@@ -43,17 +51,18 @@ sizeSteps = [ size aHand
 
 -- TASK A2
 
--- Finds and replaces string with another string in a list https://bluebones.net/2007/01/replace-in-haskell/ (Used to remove "Numeric" in Rank)
-replace :: Eq a => [a] -> [a] -> [a] -> [a]
-replace [] _ _ = []
-replace s find repl =
-    if take (length find) s == find
-        then repl ++ (replace (drop (length find) s) find repl)
-        else [head s] ++ (replace (tail s) find repl)
+-- Calculates the value of a given rank.
+valueRank :: Rank -> Int
+valueRank (Numeric r) = r
+valueRank r 
+    | r == Ace = 11
+    | otherwise = 10
 
 -- Displays a Card as a String
 displayCard :: Card -> String
-displayCard c = replace (show (rank c) ++ " of " ++ show (suit c)) "Numeric " ""
+displayCard c
+    | rank c `elem` [Jack, Queen, King, Ace] =  show (rank c) ++ " of " ++ show (suit c)
+    | otherwise = show (valueRank (rank c)) ++ " of " ++ show (suit c)
 
 
 -- Displays a Hand as a String
@@ -63,18 +72,17 @@ display (card:cards) = displayCard card ++ "\n" ++ display cards
 
 -- TASK A3
 
--- Converts Numeric to Int
-numToInt :: Rank -> Int
-numToInt r = case r of
-    Numeric x -> x
+-- Calculates initial value of hand when Ace has the value 11.
+preValue :: Hand -> Int
+preValue [] = 0
+preValue (card: cards) = valueRank (rank card) + preValue cards
 
--- Calculates the value of a given hand
+-- Calculates value of hand with Ace case taken into consideration
 value :: Hand -> Int
 value [] = 0
-value (card: cards) = do
-    if (rank card) `elem` [Jack, Queen, King, Ace]
-        then 10 + value cards
-    else numToInt (rank card) + value cards
+value (card: cards)
+    | ((valueRank (rank card)) + (preValue cards) > 21) && (rank card == Ace) = 1 + value cards --Handles Ace case 
+    | otherwise = valueRank (rank card) + value cards
 
 -- TASK A4
 
