@@ -39,6 +39,25 @@ anAceHand = [cardOfAce, cardOf8, cardOf8]
 
 -- TASK A1
 
+{- size hand2
+    = size (Card (Numeric 2) Hearts : (Card Jack Spades : [])
+    = 1 + size (Card Jack Spades : [])
+    = 1 + (1 + size [])
+    = 1 + (1 + 0)
+    = 1 + 1
+    = 2 -}
+hand2 = [cardOf2, cardOf4]
+
+sizeSteps :: [Int]
+sizeSteps = [ size hand2
+            , size (Card (Numeric 2) Hearts : (Card Jack Spades : []))
+            , 1 + size (Card Jack Spades : [])
+            , 1 + (1 + size [])
+            , 1 + (1 + 0)
+            , 1 + 1
+            , 2
+            ]
+
 -- TASK A2
 
 -- TASK A3
