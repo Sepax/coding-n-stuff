@@ -72,9 +72,6 @@ display (card:cards) = displayCard card ++ "\n" ++ display cards
 
 -- TASK A3
 
--- Calculates the value of a given hand
-
-
 -- Calculates initial value of hand when Ace has the value 11.
 preValue :: Hand -> Int
 preValue [] = 0
