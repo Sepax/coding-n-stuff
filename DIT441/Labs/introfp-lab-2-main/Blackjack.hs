@@ -87,11 +87,19 @@ displayCard (Card r Clubs) = " \9827 " ++ show(r) ++ "\n"
 
 -- TASK A3
 
--- blablabla
+-- Calulates the value of the given hand, considering Blackjack rules.
 value :: Hand -> Int
-value [] = 0
-value [c] = valueCard c
-value (c:h) = valueCard c + value h
+value h
+    | valueAcesAsTen h > 21 = valueAcesAsTen h - 9*numberOfAces h
+    | otherwise = valueAcesAsTen h
+
+
+
+-- Calculates the value of given hand with Aces having the value of 10.
+valueAcesAsTen :: Hand -> Int
+valueAcesAsTen [] = 0
+valueAcesAsTen [c] = valueCard c
+valueAcesAsTen (c:h) = valueCard c + valueAcesAsTen h
 
 -- Defines a value for given rank.
 valueRank :: Rank -> Int
@@ -113,7 +121,13 @@ numberOfAces (c:h)
     | otherwise = numberOfAces h
 
 
-
-
-
 -- TASK A4
+
+gameOver :: Hand -> Bool
+gameOver h = value h > 21
+
+winner :: Hand -> Hand -> Player
+winner gh bh
+    | (gameOver bh) && not (gameOver gh) = Guest
+    | value gh > value bh && not (gameOver gh) = Guest
+    | otherwise = Bank
