@@ -65,7 +65,7 @@ sizeSteps = [ size hand2
 -- TASK A2
 
 
--- /Shows the cards in a given hand.
+-- Shows the cards in a given hand.
 display :: Hand -> String
 display [] = ""
 display [c] = displayCard c
@@ -90,20 +90,21 @@ displayCard (Card r Clubs) = " \9827 " ++ show(r) ++ "\n"
 -- Calulates the value of the given hand, considering Blackjack rules.
 value :: Hand -> Int
 value h
-    | valueAcesAsTen h > 21 = valueAcesAsTen h - 9*numberOfAces h
-    | otherwise = valueAcesAsTen h
+    | valueAcesAsEleven h > 21 = valueAcesAsEleven h - 10*numberOfAces h
+    | otherwise = valueAcesAsEleven h
 
 
 
 -- Calculates the value of given hand with Aces having the value of 10.
-valueAcesAsTen :: Hand -> Int
-valueAcesAsTen [] = 0
-valueAcesAsTen [c] = valueCard c
-valueAcesAsTen (c:h) = valueCard c + valueAcesAsTen h
+valueAcesAsEleven :: Hand -> Int
+valueAcesAsEleven [] = 0
+valueAcesAsEleven [c] = valueCard c
+valueAcesAsEleven (c:h) = valueCard c + valueAcesAsEleven h
 
 -- Defines a value for given rank.
 valueRank :: Rank -> Int
 valueRank (Numeric i) = i
+valueRank Ace = 11
 valueRank r = 10
 
 -- Defines a value for given card
