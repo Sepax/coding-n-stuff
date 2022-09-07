@@ -38,7 +38,7 @@ aBustHand :: Hand
 aBustHand = [cardOfJack, cardOf8, cardOf8]
 
 anAceHand :: Hand
-anAceHand = [cardOfAce, cardOf8, cardOf8]
+anAceHand = [cardOfAce, cardOf8]
 
 -- TASK A1
 
@@ -68,21 +68,20 @@ sizeSteps = [ size hand2
 -- Shows the cards in a given hand.
 display :: Hand -> String
 display [] = ""
-display [c] = displayCard c
 display (c:h) = displayCard c ++ display h
 
 
 
 -- Displays a given card in a more readable way.
 displayCard :: Card -> String
-displayCard (Card (Numeric i) Hearts) = " \9829 " ++ show(i) ++ "\n"
-displayCard (Card (Numeric i) Spades) = " \9824 " ++ show(i) ++ "\n"
+displayCard (Card (Numeric i) Hearts)   = " \9829 " ++ show(i) ++ "\n"
+displayCard (Card (Numeric i) Spades)   = " \9824 " ++ show(i) ++ "\n"
 displayCard (Card (Numeric i) Diamonds) = " \9830 " ++ show(i) ++ "\n"
-displayCard (Card (Numeric i) Clubs) = " \9827 " ++ show(i) ++ "\n"
-displayCard (Card r Hearts) = " \9829 " ++ show(r) ++ "\n"
-displayCard (Card r Spades) = " \9824 " ++ show(r) ++ "\n"
-displayCard (Card r Diamonds) = " \9830 " ++ show(r) ++ "\n"
-displayCard (Card r Clubs) = " \9827 " ++ show(r) ++ "\n"
+displayCard (Card (Numeric i) Clubs)    = " \9827 " ++ show(i) ++ "\n"
+displayCard (Card r Hearts)             = " \9829 " ++ show(r) ++ "\n"
+displayCard (Card r Spades)             = " \9824 " ++ show(r) ++ "\n"
+displayCard (Card r Diamonds)           = " \9830 " ++ show(r) ++ "\n"
+displayCard (Card r Clubs)              = " \9827 " ++ show(r) ++ "\n"
 
 
 -- TASK A3
@@ -101,15 +100,21 @@ valueAcesAsEleven [] = 0
 valueAcesAsEleven [c] = valueCard c
 valueAcesAsEleven (c:h) = valueCard c + valueAcesAsEleven h
 
+
+
 -- Defines a value for given rank.
 valueRank :: Rank -> Int
 valueRank (Numeric i) = i
 valueRank Ace = 11
 valueRank r = 10
 
+
+
 -- Defines a value for given card
 valueCard :: Card -> Int
 valueCard c = valueRank (rank c)
+
+
 
 -- Calulates the number of aces in a hand.
 numberOfAces :: Hand -> Int
