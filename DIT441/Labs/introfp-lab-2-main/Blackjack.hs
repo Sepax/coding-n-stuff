@@ -40,6 +40,8 @@ aBustHand = [cardOfJack, cardOf8, cardOf8]
 anAceHand :: Hand
 anAceHand = [cardOfAce, cardOf8]
 
+
+
 -- TASK A1
 
 {- size hand2
@@ -49,7 +51,8 @@ anAceHand = [cardOfAce, cardOf8]
     = 1 + (1 + 0)
     = 1 + 1
     = 2 -}
- 
+
+
 hand2 = (Card (Numeric 2) Hearts : (Card Jack Spades : []))
 
 sizeSteps :: [Int]
@@ -62,8 +65,10 @@ sizeSteps = [ size hand2
             , 2
             ]
 
--- TASK A2
 
+
+
+-- TASK A2
 
 -- Shows the cards in a given hand.
 display :: Hand -> String
@@ -82,6 +87,8 @@ displayCard (Card r Hearts)             = " \9829 " ++ show(r) ++ "\n"
 displayCard (Card r Spades)             = " \9824 " ++ show(r) ++ "\n"
 displayCard (Card r Diamonds)           = " \9830 " ++ show(r) ++ "\n"
 displayCard (Card r Clubs)              = " \9827 " ++ show(r) ++ "\n"
+
+
 
 
 -- TASK A3
@@ -127,11 +134,17 @@ numberOfAces (c:h)
     | otherwise = numberOfAces h
 
 
+
+
 -- TASK A4
 
+-- Checks if a given hand is bust.
 gameOver :: Hand -> Bool
 gameOver h = value h > 21
 
+
+
+-- Checks which hand wins, the returns the owner of that hand, i.e the winner.
 winner :: Hand -> Hand -> Player
 winner gh bh
     | (gameOver bh) && not (gameOver gh) = Guest
