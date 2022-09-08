@@ -14,6 +14,9 @@ cardOf4 = Card (Numeric 4) Hearts
 cardOf8 :: Card
 cardOf8 = Card (Numeric 8) Hearts
 
+cardOf10 :: Card
+cardOf10 = Card (Numeric 10) Hearts
+
 cardOfJack :: Card
 cardOfJack = Card Jack Spades
 
@@ -35,28 +38,28 @@ aBustHand :: Hand
 aBustHand = [cardOfJack, cardOf8, cardOf8]
 
 anAceHand :: Hand
-anAceHand = [cardOfAce, cardOf8, cardOf8]
+anAceHand = [cardOfAce, cardOf8]
+
+anotherAceHand :: Hand
+anotherAceHand = [cardOfAce, cardOfAce, cardOfAce]
+
 
 -- TASK A1
 
--- Returns a list which contains multiples of the values 2. Proof that the equations in said list returns the same value.
+hand2 = (Card (Numeric 2) Hearts : (Card Jack Spades : []))
+
 sizeSteps :: [Int]
-sizeSteps = [ size aHand
+sizeSteps = [ size hand2
             , size (Card (Numeric 2) Hearts : (Card Jack Spades : []))
             , 1 + size (Card Jack Spades : [])
-            , 1 + 1 + size []
-            , 1 + 1 + 0
+            , 1 + (1 + size [])
+            , 1 + (1 + 0)
+            , 1 + 1
             , 2
             ]
 
--- TASK A2
 
--- Calculates the value of a given rank.
-valueRank :: Rank -> Int
-valueRank (Numeric r) = r
-valueRank r 
-    | r == Ace = 11
-    | otherwise = 10
+-- TASK A2
 
 -- Displays a Card as a String
 displayCard :: Card -> String
@@ -64,39 +67,58 @@ displayCard c
     | rank c `elem` [Jack, Queen, King, Ace] =  show (rank c) ++ " of " ++ show (suit c)
     | otherwise = show (valueRank (rank c)) ++ " of " ++ show (suit c)
 
-
--- Displays a Hand as a String
+-- Shows the cards in a given hand.
 display :: Hand -> String
-display [] = []
-display (card:cards) = displayCard card ++ "\n" ++ display cards
+display [] = ""
+display (c:h) = displayCard c ++ "\n" ++ display h
+
 
 -- TASK A3
 
--- Calculates initial value of hand when Ace has the value 11.
-preValue :: Hand -> Int
-preValue [] = 0
-preValue (card: cards) = valueRank (rank card) + preValue cards
+-- Defines a value for given rank.
 
--- Calculates value of hand with Ace case taken into consideration
+valueRank :: Rank -> Int
+valueRank (Numeric i) = i
+valueRank Ace = 11
+valueRank _ = 10
+
+
+-- Defines a value for given card
+valueCard :: Card -> Int
+valueCard (Card r s) = valueRank r
+
+
+-- Calulates the number of aces in a hand.
+numberOfAces :: Hand -> Int
+numberOfAces [] = 0
+numberOfAces (c:h)
+    | rank c == Ace = 1 + numberOfAces h
+    | otherwise = numberOfAces h
+
+
+-- Calculates the value of given hand with Aces having the value of 11.
+baseValue :: Hand -> Int
+baseValue [] = 0
+baseValue (c:h) = valueCard c + baseValue h
+
+
+-- Calulates the value of the given hand, considering Blackjack rules.
 value :: Hand -> Int
-value [] = 0
-value (card: cards)
-    | ((valueRank (rank card)) + (preValue cards) > 21) && (rank card == Ace) = 1 + value cards --Handles Ace case 
-    | otherwise = valueRank (rank card) + value cards
+value h
+    | baseValue h > 21 = baseValue h - 10 * numberOfAces h
+    | otherwise = baseValue h
+
 
 -- TASK A4
 
--- Checks if the player is bust
+-- Checks if a given hand is bust.
 gameOver :: Hand -> Bool
-gameOver h
-    | value h > 21 = True
-    | value h <= 21 = False
+gameOver h = value h > 21
 
--- Checks if the bank or the player has won the game
+
+-- Checks which hand wins, the returns the owner of that hand, i.e the winner.
 winner :: Hand -> Hand -> Player
-winner b p 
-    | gameOver p == True = Bank
-    | value p <= value b = Bank
-    | value p > value b = Guest
-
-
+winner gh bh
+    | gameOver gh == True = Bank
+    | value gh <= value bh = Bank
+    | otherwise = Guest
