@@ -72,6 +72,7 @@ display :: Hand -> String
 display [] = ""
 display (c:h) = displayCard c ++ "\n" ++ display h
 
+
 -- TASK A3
 
 -- Defines a value for given rank.
