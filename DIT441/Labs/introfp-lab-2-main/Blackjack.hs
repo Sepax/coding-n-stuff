@@ -144,7 +144,8 @@ gameOver h = value h > 21
 
 -- Checks which hand wins, the returns the owner of that hand, i.e the winner.
 winner :: Hand -> Hand -> Player
-winner gh bh
-    | (gameOver bh) && not (gameOver gh) = Guest
-    | value gh > value bh && not (gameOver gh) = Guest
-    | otherwise = Bank
+winner b g 
+    | gameOver g == True = Bank
+    | value g <= value b = Bank
+    | value g > value b = Guest
+
