@@ -104,7 +104,6 @@ value h
 -- Calculates the value of given hand with Aces having the value of 10.
 valueAcesAsEleven :: Hand -> Int
 valueAcesAsEleven [] = 0
-valueAcesAsEleven [c] = valueCard c
 valueAcesAsEleven (c:h) = valueCard c + valueAcesAsEleven h
 
 
@@ -113,7 +112,7 @@ valueAcesAsEleven (c:h) = valueCard c + valueAcesAsEleven h
 valueRank :: Rank -> Int
 valueRank (Numeric i) = i
 valueRank Ace = 11
-valueRank r = 10
+valueRank _ = 10
 
 
 
@@ -125,7 +124,6 @@ valueCard c = valueRank (rank c)
 
 -- Calulates the number of aces in a hand.
 numberOfAces :: Hand -> Int
-numberOfAces [] = 0
 numberOfAces [c]
     | rank c == Ace = 1
     | otherwise = 0
