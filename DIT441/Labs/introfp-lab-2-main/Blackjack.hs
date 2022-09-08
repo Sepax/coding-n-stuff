@@ -122,4 +122,3 @@ winner gh bh
     | gameOver gh == True = Bank
     | value gh <= value bh = Bank
     | otherwise = Guest
-
