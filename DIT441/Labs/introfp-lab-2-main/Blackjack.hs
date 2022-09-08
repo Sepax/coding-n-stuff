@@ -40,18 +40,11 @@ aBustHand = [cardOfJack, cardOf8, cardOf8]
 anAceHand :: Hand
 anAceHand = [cardOfAce, cardOf8]
 
+anotherAceHand :: Hand
+anotherAceHand = [cardOfAce, cardOfAce, cardOfAce]
 
 
 -- TASK A1
-
-{- size hand2
-    = size (Card (Numeric 2) Hearts : (Card Jack Spades : [])
-    = 1 + size (Card Jack Spades : [])
-    = 1 + (1 + size [])
-    = 1 + (1 + 0)
-    = 1 + 1
-    = 2 -}
-
 
 hand2 = (Card (Numeric 2) Hearts : (Card Jack Spades : []))
 
@@ -66,74 +59,53 @@ sizeSteps = [ size hand2
             ]
 
 
-
-
 -- TASK A2
+
+-- Displays a Card as a String
+displayCard :: Card -> String
+displayCard c
+    | rank c `elem` [Jack, Queen, King, Ace] =  show (rank c) ++ " of " ++ show (suit c)
+    | otherwise = show (valueRank (rank c)) ++ " of " ++ show (suit c)
 
 -- Shows the cards in a given hand.
 display :: Hand -> String
 display [] = ""
-display (c:h) = displayCard c ++ display h
-
-
-
--- Displays a given card in a more readable way.
-displayCard :: Card -> String
-displayCard (Card (Numeric i) Hearts)   = " \9829 " ++ show(i) ++ "\n"
-displayCard (Card (Numeric i) Spades)   = " \9824 " ++ show(i) ++ "\n"
-displayCard (Card (Numeric i) Diamonds) = " \9830 " ++ show(i) ++ "\n"
-displayCard (Card (Numeric i) Clubs)    = " \9827 " ++ show(i) ++ "\n"
-displayCard (Card r Hearts)             = " \9829 " ++ show(r) ++ "\n"
-displayCard (Card r Spades)             = " \9824 " ++ show(r) ++ "\n"
-displayCard (Card r Diamonds)           = " \9830 " ++ show(r) ++ "\n"
-displayCard (Card r Clubs)              = " \9827 " ++ show(r) ++ "\n"
-
-
-
+display (c:h) = displayCard c ++ "\n" ++ display h
 
 -- TASK A3
 
--- Calulates the value of the given hand, considering Blackjack rules.
-value :: Hand -> Int
-value h
-    | valueAcesAsEleven h > 21 = valueAcesAsEleven h - 10*numberOfAces h
-    | otherwise = valueAcesAsEleven h
-
-
-
--- Calculates the value of given hand with Aces having the value of 10.
-valueAcesAsEleven :: Hand -> Int
-valueAcesAsEleven [] = 0
-valueAcesAsEleven [c] = valueCard c
-valueAcesAsEleven (c:h) = valueCard c + valueAcesAsEleven h
-
-
-
 -- Defines a value for given rank.
+
 valueRank :: Rank -> Int
 valueRank (Numeric i) = i
 valueRank Ace = 11
-valueRank r = 10
-
+valueRank _ = 10
 
 
 -- Defines a value for given card
 valueCard :: Card -> Int
-valueCard c = valueRank (rank c)
-
+valueCard (Card r s) = valueRank r
 
 
 -- Calulates the number of aces in a hand.
 numberOfAces :: Hand -> Int
 numberOfAces [] = 0
-numberOfAces [c]
-    | rank c == Ace = 1
-    | otherwise = 0
 numberOfAces (c:h)
     | rank c == Ace = 1 + numberOfAces h
     | otherwise = numberOfAces h
 
 
+-- Calculates the value of given hand with Aces having the value of 11.
+baseValue :: Hand -> Int
+baseValue [] = 0
+baseValue (c:h) = valueCard c + baseValue h
+
+
+-- Calulates the value of the given hand, considering Blackjack rules.
+value :: Hand -> Int
+value h
+    | baseValue h > 21 = baseValue h - 10 * numberOfAces h
+    | otherwise = baseValue h
 
 
 -- TASK A4
@@ -143,10 +115,9 @@ gameOver :: Hand -> Bool
 gameOver h = value h > 21
 
 
-
 -- Checks which hand wins, the returns the owner of that hand, i.e the winner.
 winner :: Hand -> Hand -> Player
 winner gh bh
-    | (gameOver bh) && not (gameOver gh) = Guest
-    | value gh > value bh && not (gameOver gh) = Guest
-    | otherwise = Bank
+    | gameOver gh == True = Bank
+    | value gh <= value bh = Bank
+    | otherwise = Guest
