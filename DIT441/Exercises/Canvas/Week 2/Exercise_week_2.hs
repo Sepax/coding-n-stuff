@@ -45,5 +45,87 @@ fibList n = [fib x | x <- [0..n]]
 -- WHAT EVEN IS A PROPERTY???
 
 -- 5. Factors
+
 smallestFactor :: Int -> Int
-smallestFactor = undefined 
+smallestFactor n = head [x | x <- [2..n], n `mod` x == 0]
+
+-- This is not recursive... but I don't know what else to do...
+nextFactor :: Int -> Int -> Int
+nextFactor _ 0 = 0
+nextFactor 1 _ = error "error: k = 1 not allowed"
+nextFactor k n
+    | n `mod` k == 0 = k
+    | otherwise = nextFactor (k+1) n
+
+smallestFactor' :: Int -> Int -> Int
+smallestFactor' = nextFactor
+
+-- 6.(*) Defining Types ----------------------------------------
+
+-- | Defining the data type "Month"
+data Month = January | February | March | April | May | June | July | August | September | October | November | December deriving (Enum, Show)
+
+
+-- | Function that checks if given year is a leap year
+isItLeapYear :: Int -> Bool
+isItLeapYear y = mod y 4 == 0
+
+
+-- | Defines how many days in each month, given the year
+daysInMonth :: Month -> Int -> Int
+daysInMonth February y
+    | mod y 4 == 0 = 29
+    | otherwise = 28
+daysInMonth April _ = 30
+daysInMonth June _ = 30
+daysInMonth September _ = 30
+daysInMonth November _ = 30
+daysInMonth _ _ = 31
+
+-- | Defining the data type "Date" 
+data Date = Date Int Int Int
+instance Show Date where
+    show (Date y m d) = show y ++ "-" ++ show m ++ "-" ++ show d
+
+
+-- | Checks if a given date is valid
+validDate :: Date -> Bool
+validDate (Date y m d)
+    | d `elem` [1..(daysInMonth (toEnum m :: Month) y)] = True
+    | otherwise = False
+
+
+
+{- -- | Extracts the year of a given date
+year :: Date -> Int
+year (Date y _ _) = y
+
+
+-- | Extracts the month of a given date
+month :: Date -> Int
+month (Date _ m _) = m
+
+
+-- | Extracts the day of a given date
+day :: Date -> Int
+day (Date _ _ d) = d -}
+
+
+-- Testdates --
+
+-- Today
+today :: Date
+today = Date 2022 9 12
+
+-- Unvalid date
+unvalidDate :: Date
+unvalidDate = Date 2022 9 31
+
+-- Valid leap year date
+leapYearValid :: Date
+leapYearValid = Date 2020 2 29
+
+-- Invalid leap year date
+leapYearInvalid :: Date
+leapYearInvalid = Date 2022 2 29
+
