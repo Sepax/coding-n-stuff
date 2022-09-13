@@ -1,4 +1,3 @@
-import Text.XHtml (small)
 -- Exercises week 2
 
 -- 1. (*) The Maximum Function
@@ -95,20 +94,12 @@ validDate (Date y m d)
     | otherwise = False
 
 
-
-{- -- | Extracts the year of a given date
-year :: Date -> Int
-year (Date y _ _) = y
-
-
--- | Extracts the month of a given date
-month :: Date -> Int
-month (Date _ m _) = m
-
-
--- | Extracts the day of a given date
-day :: Date -> Int
-day (Date _ _ d) = d -}
+-- | Function that returns the next date
+tomorrow :: Date -> Date
+tomorrow (Date y m d)
+    | validDate (Date y m (d+1)) = Date y m (d+1)
+    | validDate (Date y (m+1) 1) = Date y (m+1) 1
+    | otherwise = Date (y+1) 1 1 
 
 
 -- Testdates --
@@ -128,4 +119,43 @@ leapYearValid = Date 2020 2 29
 -- Invalid leap year date
 leapYearInvalid :: Date
 leapYearInvalid = Date 2022 2 29
+
+
+
+-- 7. Replication
+
+repli :: Integer -> String -> String
+repli 0 s = ""
+repli n s = s ++ repli (n-1) s
+
+
+
+-- 8. Multiplying list elements
+
+multiply :: Num a => [a] -> a
+multiply [] = 1
+multiply (x:xs) = x * multiply xs
+
+
+-- 9 (*) Avoiding Duplicates
+
+duplicates :: Eq a => [a] -> Bool
+duplicates [] = False
+duplicates (x:xs) = x `elem` xs || duplicates xs
+
+
+removeDuplicates :: Eq a => [a] -> [a]
+removeDuplicates [] = []
+removeDuplicates (x:xs)
+    | x `elem` xs = removeDuplicates xs
+    | otherwise = x:removeDuplicates xs
+
+prop_duplicatesRemoved :: [Integer] -> Bool
+prop_duplicatesRemoved xs = not (duplicates (removeDuplicates xs))
+
+-- Note: this test allows removeDuplicates to remove too much, e.g.
+-- it would pass the test if it always returned an empty list. The test also
+-- allows the function to add arbitrary values that were not in the
+-- original list, but the polymorphic type of removeDuplicates prevents this.
+-- (NB: THIS NOTE WAS COPY-PASTED FROM THE SOLUTIONS)
 
