@@ -1,14 +1,12 @@
-import Data.Time (TimeLocale(months))
 -- Exercises week 2
 
 -- 1. (*) The Maximum Function
 
 maxi :: Ord a => a -> a -> a 
-maxi a b 
-    | a > b = a
-    | a < b = b
-    | otherwise = error "Arguments have the same value"
-
+maxi x y 
+    | x >= y = x
+    | otherwise = y
+    
 -- 2. Sum of squares
 -- sumsq n returns 1*1 + 2*2 + ... + n*n
 
@@ -35,14 +33,26 @@ fib n = fib (n-2) + fib (n-1)
 -- fibList computes a list of all Fibonacci numbers
 -- up to the nth number.
 fibList :: Int -> [Int]
-fibList n = [fib x | x <- [0..n]] 
+fibList n = [fib x | x <- [0..(n-1)]] 
 
--- I notice that the computiontime increases for
--- each larger value n.
+fibAux :: Integer -> Integer -> Integer -> Integer
+fibAux 0 a b = a
+fibAux i a b | i>0 = fibAux (i-1) b (a+b)
+             | otherwise = error "Negative index"
 
+new_fib :: Integer -> Integer
+new_fib n = fibAux n 1 1
 
--- More difficult
--- WHAT EVEN IS A PROPERTY???
+{-
+Evaluating fibAux 5 1 1
+fibAux 5 1 1
+fibAux 4 1 2
+fibAux 3 2 3
+fibAux 2 3 5
+fibAux 1 5 8
+fibAux 0 8 13
+8
+-}
 
 -- 5. Factors
 
