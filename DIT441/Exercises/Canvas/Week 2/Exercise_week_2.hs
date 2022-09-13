@@ -1,3 +1,4 @@
+import Data.Time (TimeLocale(months))
 -- Exercises week 2
 
 -- 1. (*) The Maximum Function
@@ -90,15 +91,17 @@ instance Show Date where
 -- | Checks if a given date is valid
 validDate :: Date -> Bool
 validDate (Date y m d)
-    | d `elem` [1..(daysInMonth (toEnum m :: Month) y)] = True
+    | d `elem` [1..(daysInMonth (toEnum (m-1) :: Month) y)] = True
     | otherwise = False
 
 
+
 -- | Function that returns the next date
+-- VERY UGLY CODE... Compare with Alex soultions...
 tomorrow :: Date -> Date
 tomorrow (Date y m d)
     | validDate (Date y m (d+1)) = Date y m (d+1)
-    | validDate (Date y (m+1) 1) = Date y (m+1) 1
+    | m < fromEnum December + 1 = Date y (fromEnum (succ (toEnum (m-1) :: Month))+1) 1
     | otherwise = Date (y+1) 1 1 
 
 
@@ -106,7 +109,7 @@ tomorrow (Date y m d)
 
 -- Today
 today :: Date
-today = Date 2022 9 12
+today = Date 2022 9 13
 
 -- Unvalid date
 unvalidDate :: Date
