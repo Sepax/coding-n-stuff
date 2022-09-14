@@ -139,7 +139,7 @@ allSuits = [Hearts, Spades, Diamonds, Clubs]
 
 -- Returns a full deck of 52 cards
 fullDeck :: Deck
-fullDeck = [Card r s | r <- allRanks, s <- allSuits]
+fullDeck = [Card r s | s <- allSuits, r <- allRanks]
 
 -- Full deck test property
 prop_size_fullDeck :: Bool
@@ -147,10 +147,55 @@ prop_size_fullDeck = size fullDeck == 52
 
 -- TASK B2
 
--- Given a deck and a hand, draws one card from the deck and puts on the hand. Returns both the deck and the hand (in that order)
+-- Given a deck and a hand, draws one card from the deck and puts on the hand.
+-- Returns both the deck and the hand (in that order)
 draw :: Deck -> Hand -> (Deck, Hand)
-draw [] h = error "draw: The deck is empty."
+draw [] _ = error "draw: The deck is empty."
 draw (x:xs) h = (xs, x:h)
 
+playBank :: Deck -> Hand
+playBank d = snd (playBank' d [])
+
+playBank' :: Deck -> Hand -> (Deck, Hand)
+playBank' d bh
+    | value bh < 16 = playBank' d' bh'
+    | otherwise = (d, bh)
+    where (d', bh') = draw d bh
+
+testDeck = [cardOf2, cardOf4, cardOf8]
+
+-- Shuffles a deck of cards (depending on the float,
+-- we append a card to the front or back of the deck)
+shuffle :: [Double] -> Deck -> Deck
+shuffle _ [] = []
+shuffle (x:xs) d = c' : shuffle xs d'
+    where (d', c') = takeCard (randomIndex (x:xs) d) d
+
+-- Removes the card at index i and returns the modified deck and the card
+takeCard :: Int -> Deck -> (Deck, Card)
+takeCard _ [] = ([], Card Ace Spades)
+takeCard i deck = (take i deck ++ drop (1 + i) deck, deck !! i)
+
+-- Selects a random index based on the length of the deck
+randomIndex :: [Double] -> Deck -> Int
+randomIndex (x:xs) d = round (x * fromIntegral(length d-1))
+
+-- Test the shuffle function
+testShuffle :: IO Deck
+testShuffle = do
+    Rand ds <- generate arbitrary
+    return (shuffle ds fullDeck)
+
+-- Test the RandomIndex function
+testRandomIndex :: IO Int
+testRandomIndex = do
+    Rand ds <- generate arbitrary
+    return (randomIndex ds fullDeck)
 
 
+-- Task B5
+
+belongsTo :: Card -> Deck -> Bool
+belongsTo c d
+    | c `belongsTo` [] = False
+    | c `belongsTo` (c':cs) = c' || c `belongsTo` cs 
