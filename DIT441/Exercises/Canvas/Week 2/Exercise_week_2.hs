@@ -73,7 +73,7 @@ smallestFactor' = nextFactor
 -- 6.(*) Defining Types ----------------------------------------
 
 -- | Defining the data type "Month"
-data Month = January | February | March | April | May | June | July | August | September | October | November | December deriving (Enum, Show)
+data Month = January | February | March | April | May | June | July | August | September | October | November | December deriving (Enum, Show, Eq)
 
 
 -- | Function that checks if given year is a leap year
@@ -86,10 +86,8 @@ daysInMonth :: Month -> Int -> Int
 daysInMonth February y
     | mod y 4 == 0 = 29
     | otherwise = 28
-daysInMonth April _ = 30
-daysInMonth June _ = 30
-daysInMonth September _ = 30
-daysInMonth November _ = 30
+daysInMonth m _ 
+    | m `elem` [April, June, September, November] = 30
 daysInMonth _ _ = 31
 
 -- | Defining the data type "Date" 
