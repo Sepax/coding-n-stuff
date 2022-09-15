@@ -164,8 +164,10 @@ playBank' d bh
 
 testDeck = [cardOf2, cardOf4, cardOf8]
 
--- Shuffles a deck of cards (depending on the float,
--- we append a card to the front or back of the deck)
+
+-- TASK B3
+
+-- Shuffles a deck of cards
 shuffle :: [Double] -> Deck -> Deck
 shuffle _ [] = []
 shuffle (x:xs) d = c' : shuffle xs d'
@@ -179,18 +181,6 @@ takeCard i deck = (take i deck ++ drop (1 + i) deck, deck !! i)
 -- Selects a random index based on the length of the deck
 randomIndex :: [Double] -> Deck -> Int
 randomIndex (x:xs) d = round (x * fromIntegral(length d-1))
-
--- Test the shuffle function
-testShuffle :: IO Deck
-testShuffle = do
-    Rand ds <- generate arbitrary
-    return (shuffle ds fullDeck)
-
--- Test the RandomIndex function
-testRandomIndex :: IO Int
-testRandomIndex = do
-    Rand ds <- generate arbitrary
-    return (randomIndex ds fullDeck)
 
 
 -- Task B5
