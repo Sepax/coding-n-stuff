@@ -123,7 +123,7 @@ gameOver h = value h > 21
 winner :: Hand -> Hand -> Player
 winner gh bh
     | gameOver gh = Bank
-    | value gh <= value bh = Bank
+    | value gh <= value bh && not gameOver bh = Bank
     | otherwise = Guest
 
 -- TASK B1
