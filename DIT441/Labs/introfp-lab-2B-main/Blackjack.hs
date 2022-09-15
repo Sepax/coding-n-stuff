@@ -70,6 +70,18 @@ displayCard c
     | rank c `elem` [Jack, Queen, King, Ace] =  show (rank c) ++ " of " ++ show (suit c)
     | otherwise = show (valueRank (rank c)) ++ " of " ++ show (suit c)
 
+displayCard' :: Card -> String
+displayCard' (Card r s)
+    | r `elem` [Jack, Queen, King, Ace] = show r ++ displaySuit s
+    | otherwise = show (valueRank r) ++ displaySuit s
+    where
+        displaySuit s = case s of
+            Hearts -> "\9829"
+            Spades -> "\9824"
+            Diamonds -> "\9830"
+            Clubs -> "\9827"
+    
+
 -- Shows the cards in a given hand.
 display :: Hand -> String
 display [] = ""
@@ -123,7 +135,7 @@ gameOver h = value h > 21
 winner :: Hand -> Hand -> Player
 winner gh bh
     | gameOver gh = Bank
-    | value gh <= value bh && not gameOver bh = Bank
+    | value gh <= value bh && not (gameOver bh) = Bank
     | otherwise = Guest
 
 -- TASK B1
@@ -137,9 +149,11 @@ allRanks = [Numeric x | x <- [2 .. 10]] ++ [Jack, Queen, King, Ace]
 allSuits :: [Suit]
 allSuits = [Hearts, Spades, Diamonds, Clubs]
 
+
 -- Returns a full deck of 52 cards
 fullDeck :: Deck
 fullDeck = [Card r s | s <- allSuits, r <- allRanks]
+
 
 -- Full deck test property
 prop_size_fullDeck :: Bool
@@ -152,6 +166,7 @@ prop_size_fullDeck = size fullDeck == 52
 draw :: Deck -> Hand -> (Deck, Hand)
 draw [] _ = error "draw: The deck is empty."
 draw (x:xs) h = (xs, x:h)
+
 
 playBank :: Deck -> Hand
 playBank d = snd (playBank' d [])
@@ -173,10 +188,12 @@ shuffle _ [] = []
 shuffle (x:xs) d = c' : shuffle xs d'
     where (d', c') = takeCard (randomIndex (x:xs) d) d
 
+
 -- Removes the card at index i and returns the modified deck and the card
 takeCard :: Int -> Deck -> (Deck, Card)
 takeCard _ [] = ([], Card Ace Spades)
 takeCard i deck = (take i deck ++ drop (1 + i) deck, deck !! i)
+
 
 -- Selects a random index based on the length of the deck
 randomIndex :: [Double] -> Deck -> Int
