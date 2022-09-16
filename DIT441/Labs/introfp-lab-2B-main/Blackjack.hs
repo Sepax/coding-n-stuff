@@ -70,17 +70,6 @@ displayCard c
         (suit c)
   | otherwise = show (valueRank (rank c)) ++ " of " ++ show (suit c)
 
-displayCard' :: Card -> String
-displayCard' (Card r s)
-  | r `elem` [Jack, Queen, King, Ace] = show r ++ displaySuit s
-  | otherwise = show (valueRank r) ++ displaySuit s
-  where
-    displaySuit s = case s of
-      Hearts -> "\9829"
-      Spades -> "\9824"
-      Diamonds -> "\9830"
-      Clubs -> "\9827"
-
 -- Shows the cards in a given hand.
 display :: Hand -> String
 display [] = ""
@@ -178,21 +167,21 @@ shuffle (x : xs) d = c' : shuffle xs d'
 -- Removes the card at index i and returns the modified deck and the card
 takeCard :: Int -> Deck -> (Deck, Card)
 takeCard _ [] = ([], Card Ace Spades)
-takeCard i deck = (take i deck ++ drop (1 + i) deck, deck !! i)
+takeCard i d = (take i d ++ drop (1 + i) d, d !! i)
 
 -- Selects a random index based on the length of the deck
 randomIndex :: [Double] -> Deck -> Int
 randomIndex (x : xs) d = round (x * fromIntegral (length d - 1))
 
--- Task B5
+-- Task B5 & B6
 
 belongsTo :: Card -> Deck -> Bool
 c `belongsTo` [] = False
 c `belongsTo` (c' : cs) = c == c' || c `belongsTo` cs
 
 prop_shuffle :: Card -> Deck -> Rand -> Bool
-prop_shuffle card deck (Rand randomlist) =
-  card `belongsTo` deck == card `belongsTo` shuffle randomlist deck
+prop_shuffle c d (Rand randomlist) =
+  c `belongsTo` d == c `belongsTo` shuffle randomlist d
 
 prop_size_shuffle :: Rand -> Deck -> Bool
 prop_size_shuffle (Rand randomlist) d =
