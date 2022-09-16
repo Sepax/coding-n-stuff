@@ -64,7 +64,10 @@ sizeSteps =
 -- Displays a Card as a String
 displayCard :: Card -> String
 displayCard c
-  | rank c `elem` [Jack, Queen, King, Ace] = show (rank c) ++ " of " ++ show (suit c)
+  | rank c `elem` [Jack, Queen, King, Ace] =
+    show (rank c) ++ " of "
+      ++ show
+        (suit c)
   | otherwise = show (valueRank (rank c)) ++ " of " ++ show (suit c)
 
 displayCard' :: Card -> String
@@ -163,8 +166,6 @@ playBank' d bh
   where
     (d', bh') = draw d bh
 
-testDeck = [cardOf2, cardOf4, cardOf8]
-
 -- TASK B3
 
 -- Shuffles a deck of cards
@@ -181,7 +182,7 @@ takeCard i deck = (take i deck ++ drop (1 + i) deck, deck !! i)
 
 -- Selects a random index based on the length of the deck
 randomIndex :: [Double] -> Deck -> Int
-randomIndex (x : xs) d = round (x * fromIntegral (length d -1))
+randomIndex (x : xs) d = round (x * fromIntegral (length d - 1))
 
 -- Task B5
 
