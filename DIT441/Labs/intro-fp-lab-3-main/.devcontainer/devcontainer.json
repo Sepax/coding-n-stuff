@@ -1,0 +1,10 @@
+{
+    "name": "Development container for Intro FP (GHC, Cabal, libs)",
+    "image": "agerdes/introfp:latest",
+    "context": "..",
+    "runArgs": [],
+    "remoteUser": "lambda",
+    "extensions": [
+        "justusadam.language-haskell"
+    ]
+}
