@@ -31,3 +31,16 @@ zip3' :: [a] -> [b] -> [c] -> [(a, b, c)]
 zip3' xs ys zs = [(x, y, z) | ((x, y), z) <- zip (zip xs ys) zs] -- Interesting!
 
 -- Seems like zip3' ist faster when testing on large lists. Why, IDK.
+
+-- | 1. Permutations
+isPermutation :: Eq a => [a] -> [a] -> Bool
+isPermutation [] _ = True
+isPermutation (x : xs) (y : ys)
+  | x == y = isPermutation xs ys
+  | x /= y = isPermutation (x : xs) ys
+
+{-
+[1,2,1] [2,1,1]
+
+[]
+-}
