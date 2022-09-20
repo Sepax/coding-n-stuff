@@ -96,27 +96,26 @@ allShapes = [Shape (makeSquares s) | s <- shapes]
 
 emptyShape :: (Int, Int) -> Shape
 emptyShape (m, n) = Shape (replicate n (emptyRow m))
-
-emptyRow :: Int -> Row
-emptyRow n = replicate n Nothing
+  where
+    emptyRow n = replicate n Nothing
 
 -- ** A2
 
 -- | The size (width and height) of a shape
 shapeSize :: Shape -> (Int, Int)
-shapeSize s = (length (rows s !! 0), length(rows s))
+shapeSize s = (length (head (rows s)), length (rows s))
 
 -- ** A3
 
 -- | Count how many non-empty squares a shape contains
 blockCount :: Shape -> Int
-blockCount s = countAllButElem Nothing (concat(rows s))
- where
-  countAllButElem :: Eq a => a -> [a] -> Int
-  ountAllButElem _ [] = 0
-  countAllButElem y (x:xs)
-    | y /= x = 1 + countAllButElem y xs
-    | otherwise = countAllButElem y xs
+blockCount s = countAllButElem Nothing (concat (rows s))
+  where
+    countAllButElem :: Eq a => a -> [a] -> Int
+    countAllButElem _ [] = 0
+    countAllButElem y (x : xs)
+      | y /= x = 1 + countAllButElem y xs
+      | otherwise = countAllButElem y xs
 
 -- * The Shape invariant
 
@@ -125,7 +124,14 @@ blockCount s = countAllButElem Nothing (concat(rows s))
 -- | Shape invariant (shapes have at least one row, at least one column,
 -- and are rectangular)
 prop_Shape :: Shape -> Bool
-prop_Shape = error "A4 prop_Shape undefined"
+prop_Shape (Shape rows) = not (null rows) && lengthRowsCheck rows
+  where
+    lengthRowsCheck [] = True
+    lengthRowsCheck r
+      | length r == 1 = True
+    lengthRowsCheck (r1 : r2 : rs)
+      | not (null r1) && length r1 == length r2 = lengthRowsCheck rs
+      | otherwise = False
 
 -- * Test data generators
 
