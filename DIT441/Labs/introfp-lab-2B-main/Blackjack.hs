@@ -1,3 +1,7 @@
+{-
+Authors     : Sebastian Pålsson, Tim Persson, Gustav Dalemo
+Lab group   : 9
+-}
 module Blackjack where
 
 import Cards
