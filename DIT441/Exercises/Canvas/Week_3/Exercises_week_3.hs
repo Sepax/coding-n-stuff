@@ -87,27 +87,55 @@ insert' 3 (2:4:[])
 pascal :: Int -> [Int]
 pascal 0 = []
 pascal n = [1] ++ sum2 (pascal (n -1)) ++ [1]
-  where
-    sum2 [] = []
-    sum2 [x] = [x]
-    sum2 (x : xs) = [sum [x, y] | (x, y) <- zip (x : xs) xs]
+
+--  where
+sum2 [] = []
+sum2 [x] = [x]
+sum2 (x : xs) = [sum [x, y] | (x, y) <- zip (x : xs) xs]
 
 {-
 Evaluating pascal 3:
-pascal 3
-[1] ++ sum2 (pascal 2) ++ [1]
-[1] ++ sum2 ([1] ++ sum2 (pascal 1) ++ [1]) ++ [1]
-[1] ++ sum2 ([1] ++ sum2 ([1] ++ sum2 (pascal 0) ++ [1]) ++ [1]) ++ [1]
-[1] ++ sum2 ([1] ++ sum2 ([1] ++ sum2 [] ++ [1]) ++ [1]) ++ [1]
-[1] ++ sum2 ([1] ++ sum2 ([1] ++ [] ++ [1]) ++ [1]) ++ [1]
-[1] ++ sum2 ([1] ++ sum2 [1,1] ++ [1]) ++ [1]
-[1] ++ sum2 ([1] ++ ([sum [x,y] | (x,y) <- zip [1,1] [1]]) ++ [1]) ++ [1]
-[1] ++ sum2 ([1] ++ [2] ++ [1]) ++ [1]
-[1] ++ sum2 [1,2,1] ++ [1]
-[1] ++ ([sum [x,y] | (x,y) <- zip [1,2,1] [2,1]]) ++ [1]
-[1] ++ [3,3] ++ [1]
-[1,3,3,1]
--}
+pascal 3 -}
+eval1 =
+  [ [1] ++ sum2 (pascal 2) ++ [1],
+    [1] ++ sum2 ([1] ++ sum2 (pascal 1) ++ [1]) ++ [1],
+    [1] ++ sum2 ([1] ++ sum2 ([1] ++ sum2 (pascal 0) ++ [1]) ++ [1]) ++ [1],
+    [1] ++ sum2 ([1] ++ sum2 ([1] ++ sum2 [] ++ [1]) ++ [1]) ++ [1],
+    [1] ++ sum2 ([1] ++ sum2 ([1] ++ [] ++ [1]) ++ [1]) ++ [1],
+    [1] ++ sum2 ([1] ++ sum2 [1, 1] ++ [1]) ++ [1],
+    [1] ++ sum2 ([1] ++ ([sum [x, y] | (x, y) <- zip [1, 1] [1]]) ++ [1]) ++ [1],
+    [1] ++ sum2 ([1] ++ [2] ++ [1]) ++ [1],
+    [1] ++ sum2 [1, 2, 1] ++ [1],
+    [1] ++ ([sum [x, y] | (x, y) <- zip [1, 2, 1] [2, 1]]) ++ [1],
+    [1] ++ [3, 3] ++ [1],
+    [1, 3, 3, 1]
+  ]
+
+-- According to solutions...:
+pascal' :: Int -> [Int]
+pascal' 1 = [1]
+pascal' n = [1] ++ [x + y | (x, y) <- pairs (pascal' (n -1))] ++ [1]
+
+--  where
+pairs (x : y : xs) = (x, y) : pairs (y : xs)
+pairs _ = []
+
+--Evaluating pascal' 3:
+--pascal'3
+eval2 =
+  [ [1] ++ [x + y | (x, y) <- pairs (pascal' 2)] ++ [1],
+    [1] ++ [x + y | (x, y) <- pairs ([1] ++ [x + y | (x, y) <- pairs (pascal' 1)] ++ [1])] ++ [1],
+    [1] ++ [x + y | (x, y) <- pairs ([1] ++ [x + y | (x, y) <- pairs [1]] ++ [1])] ++ [1],
+    [1] ++ [x + y | (x, y) <- pairs ([1] ++ [x + y | (x, y) <- []] ++ [1])] ++ [1],
+    [1] ++ [x + y | (x, y) <- pairs ([1] ++ [x + y | (x, y) <- []] ++ [1])] ++ [1],
+    [1] ++ [x + y | (x, y) <- pairs ([1] ++ [] ++ [1])] ++ [1],
+    [1] ++ [x + y | (x, y) <- pairs [1, 1]] ++ [1],
+    [1] ++ [x + y | (x, y) <- (1, 1) : pairs (1 : [])] ++ [1],
+    [1] ++ [x + y | (x, y) <- (1, 1) : []] ++ [1],
+    [1] ++ [x + y | (x, y) <- [(1, 1)]] ++ [1],
+    [1] ++ [2] ++ [1],
+    [1, 2, 1]
+  ]
 
 -- Just for fun!
 pascalShow :: [[Int]] -> IO ()
