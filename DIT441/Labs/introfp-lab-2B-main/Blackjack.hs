@@ -170,7 +170,7 @@ shuffle (x : xs) d = c' : shuffle xs d'
 
 -- Removes the card at index i and returns the modified deck and the card
 takeCard :: Int -> Deck -> (Deck, Card)
-takeCard _ [] = ([], Card Ace Spades)
+takeCard _ [] = error "error: Empty deck!"
 takeCard i d = (take i d ++ drop (1 + i) d, d !! i)
 
 -- Selects a random index based on the length of the deck
