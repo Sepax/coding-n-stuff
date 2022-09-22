@@ -139,8 +139,7 @@ prop_Shape (Shape rows) = not (null rows) && lengthRowsCheck rows
 
 -- | A random generator for colours
 genColour :: Gen Colour
-genColour = error "A5 genColour undefined"
-
+genColour = elements [Black, Red, Green, Yellow, Blue, Purple, Cyan, Grey]
 instance Arbitrary Colour where
   arbitrary = genColour
 
