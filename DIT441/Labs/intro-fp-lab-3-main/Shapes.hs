@@ -104,10 +104,17 @@ blockCount (Shape (r:rs)) = rowCount r + blockCount (Shape rs)
 -- * The Shape invariant
 
 -- ** A4
--- | Shape invariant (shapes have at least one row, at least one column,
--- and are rectangular)
+-- | Shape invariant (shapes have at least one row, at least one column, and are rectangular)
 prop_Shape :: Shape -> Bool
-prop_Shape = error "A4 prop_Shape undefined"
+prop_Shape (Shape []) = False
+prop_Shape (Shape (r:rs))
+  | null r = False
+  | not (eqLength (r:rs)) = False
+  | otherwise = True
+    where 
+      eqLength :: [Row] -> Bool
+      eqLength [] = True
+      eqLength (x:xs) = length (x:xs) == 1 || length x == length (head xs) && eqLength xs
 
 -- * Test data generators
 
