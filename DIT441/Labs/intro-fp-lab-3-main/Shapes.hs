@@ -72,6 +72,10 @@ allShapes = [Shape (makeSquares s) | s <- shapes]
               "SS",
               " S"]]
 
+-- Test Shapes
+
+testShape = Shape [[Just Black, Nothing, Just Black], [Just Black, Just Black, Nothing]]
+
 -- * Some simple functions
 
 -- ** A1
@@ -88,7 +92,14 @@ shapeSize s = (length (head (rows s)), length (rows s))
 
 -- | Count how many non-empty squares a shape contains
 blockCount :: Shape -> Int
-blockCount = error "A3 blockCount undefined"
+blockCount (Shape []) = 0
+blockCount (Shape (r:rs)) = rowCount r + blockCount (Shape rs)
+  where 
+    rowCount :: Row -> Int
+    rowCount [] = 0
+    rowCount (x:xs)
+      | isNothing x = rowCount xs
+      | otherwise = 1 + rowCount xs
 
 -- * The Shape invariant
 
