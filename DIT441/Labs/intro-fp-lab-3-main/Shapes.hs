@@ -140,7 +140,8 @@ instance Arbitrary Shape where
 -- ** A7
 -- | Rotate a shape 90 degrees
 rotateShape :: Shape -> Shape
-rotateShape = error "A7 rotateShape undefined"
+rotateShape (Shape rows) = Shape (reverse (transpose rows))
+
 
 -- ** A8
 -- | shiftShape adds empty squares above and to the left of the shape
