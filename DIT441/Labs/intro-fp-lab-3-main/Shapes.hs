@@ -76,13 +76,13 @@ allShapes = [Shape (makeSquares s) | s <- shapes]
 
 -- ** A1
 emptyShape :: (Int, Int) -> Shape
-emptyShape = error "A1 emptyShape undefined"
+emptyShape (n, x) = Shape (replicate n (replicate x Nothing))
 
 -- ** A2
 
 -- | The size (width and height) of a shape
 shapeSize :: Shape -> (Int, Int)
-shapeSize = error "A2 shapeSize undefined"
+shapeSize s = (length (head (rows s)), length (rows s))
 
 -- ** A3
 
