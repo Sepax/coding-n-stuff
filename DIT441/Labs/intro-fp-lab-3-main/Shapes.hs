@@ -72,9 +72,6 @@ allShapes = [Shape (makeSquares s) | s <- shapes]
               "SS",
               " S"]]
 
--- Test Shapes
-
-testShape = Shape [[Just Black, Nothing, Just Black], [Just Black, Just Black, Nothing]]
 
 -- * Some simple functions
 
@@ -141,7 +138,6 @@ instance Arbitrary Shape where
 -- | Rotate a shape 90 degrees
 rotateShape :: Shape -> Shape
 rotateShape (Shape rows) = Shape (reverse (transpose rows))
-
 
 -- ** A8
 -- | shiftShape adds empty squares above and to the left of the shape
