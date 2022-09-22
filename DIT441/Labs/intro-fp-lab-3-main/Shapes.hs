@@ -121,7 +121,7 @@ prop_Shape (Shape (r:rs))
 -- ** A5
 -- | A random generator for colours
 genColour :: Gen Colour
-genColour = error "A5 genColour undefined"
+genColour = elements [(minBound :: Colour) ..]
 
 instance Arbitrary Colour where
   arbitrary = genColour
@@ -129,10 +129,11 @@ instance Arbitrary Colour where
 -- ** A6
 -- | A random generator for shapes
 genShape :: Gen Shape
-genShape = error "A6 genShape undefined"
+genShape = elements allShapes
 
 instance Arbitrary Shape where
   arbitrary = genShape
+
 
 -- * Transforming shapes
 
