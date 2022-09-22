@@ -147,7 +147,7 @@ instance Arbitrary Colour where
 
 -- | A random generator for shapes
 genShape :: Gen Shape
-genShape = error "A6 genShape undefined"
+genShape = elements allShapes
 
 instance Arbitrary Shape where
   arbitrary = genShape
@@ -156,15 +156,22 @@ instance Arbitrary Shape where
 
 -- ** A7
 
--- | Rotate a shape 90 degrees
+-- | Rotate a shape 90 degrees to the left
 rotateShape :: Shape -> Shape
-rotateShape = error "A7 rotateShape undefined"
+rotateShape (Shape rows) = Shape (reverse (transpose rows))
 
 -- ** A8
 
 -- | shiftShape adds empty squares above and to the left of the shape
 shiftShape :: (Int, Int) -> Shape -> Shape
 shiftShape = error "A8 shiftShape undefined"
+
+shiftVertically :: Int -> Shape
+shiftVertically n (Shape rows)
+  | n < 0 = Shape (replicate n (replicate 3 Nothing) ++ rows)
+
+--Test Shape
+testShape = Shape[ "I", "I", "I", "I"]
 
 -- ** A9
 
