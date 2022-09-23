@@ -79,7 +79,7 @@ allShapes = [Shape (makeSquares s) | s <- shapes]
 
 -- ** A1
 emptyShape :: (Int, Int) -> Shape
-emptyShape (m, n) = Shape (replicate m (replicate n Nothing))
+emptyShape (w, h) = Shape (replicate h (replicate w Nothing))
 
 -- ** A2
 
@@ -89,6 +89,7 @@ testShape = Shape[[Nothing, Just Grey]
 
 -- | The size (width and height) of a shape
 shapeSize :: Shape -> (Int, Int)
+shapeSize (Shape []) = (0,0)
 shapeSize s = (length (head (rows s)), length (rows s))
 
 -- ** A3
@@ -154,8 +155,10 @@ shiftShape (x, y) s = moveX x (moveY y s)
 moveX :: Int -> Shape -> Shape
 moveX _ (Shape []) = Shape []
 moveX i (Shape (r:rs))
-  | i >= 0 = Shape ( (replicate i Nothing ++ r) : rows (moveX i (Shape rs)) )
-  | otherwise = Shape ( (r ++ replicate (abs i) Nothing) : rows (moveX i (Shape rs)) )
+  | i >= 0 = Shape ( (replNothing ++ r) : recurMoveX )
+  | otherwise = Shape ( (r ++ replNothing) : recurMoveX )
+    where replNothing = replicate (abs i) Nothing
+          recurMoveX = rows (moveX i (Shape rs))
 
 {- ** Alternative function for moveX
 moveX':: Int -> Shape -> Shape 
