@@ -30,7 +30,7 @@ showShape :: Shape -> String
 showShape s = unlines [showRow r | r <- rows s]
  where
   showRow r = [showSquare s | s <- r]
-    
+
   showSquare Nothing      = '.'
   showSquare (Just Black) = '#' -- can change to '█' on linux/mac
   showSquare (Just Grey)  = 'g' -- can change to '▓'
@@ -45,7 +45,7 @@ instance Show Shape where
 -- | All 7 tetrominoes (all combinations of 4 connected blocks),
 -- see <https://en.wikipedia.org/wiki/Tetromino>
 allShapes :: [Shape]
-allShapes = [Shape (makeSquares s) | s <- shapes] 
+allShapes = [Shape (makeSquares s) | s <- shapes]
  where
    makeSquares = map (map colour)
    colour c    = lookup c [ ('I', Red),  ('J', Grey),  ('T', Blue), ('O', Yellow)
@@ -91,7 +91,7 @@ shapeSize s = (length (head (rows s)), length (rows s))
 blockCount :: Shape -> Int
 blockCount (Shape []) = 0
 blockCount (Shape (r:rs)) = rowCount r + blockCount (Shape rs)
-  where 
+  where
     rowCount :: Row -> Int
     rowCount [] = 0
     rowCount (x:xs)
@@ -108,10 +108,11 @@ prop_Shape (Shape (r:rs))
   | null r = False
   | not (eqLength (r:rs)) = False
   | otherwise = True
-    where 
-      eqLength :: [Row] -> Bool
+    where
+      eqLength :: [Row] -> Bool -- Checks if all rows in a list have the same length
       eqLength [] = True
-      eqLength (x:xs) = length (x:xs) == 1 || length x == length (head xs) && eqLength xs
+      eqLength (x:xs) = length (x:xs) == 1 || 
+                        length x == length (head xs) && eqLength xs
 
 -- * Test data generators
 
@@ -142,17 +143,35 @@ rotateShape (Shape rows) = Shape (reverse (transpose rows))
 -- ** A8
 -- | shiftShape adds empty squares above and to the left of the shape
 shiftShape :: (Int, Int) -> Shape -> Shape
-shiftShape = error "A8 shiftShape undefined"
+shiftShape (x, y) s = moveX x (moveY y s)
+
+-- Moves a shape left or right depending on the value of "i" (Used in A8 & A9)
+moveX :: Int -> Shape -> Shape
+moveX _ (Shape []) = Shape []
+moveX i (Shape (r:rs))
+  | i >= 0 = Shape ((replicate i Nothing ++ r) : rows (moveX i (Shape rs)))
+  | otherwise = Shape ((r ++ replicate (abs i) Nothing) : rows (moveX i (Shape rs)))
+
+-- Moves a shape up or down depending on the value of "i" (Used in A8 & A9)
+moveY :: Int -> Shape -> Shape
+moveY i (Shape r)
+  | i > 0 = Shape (nothingRows ++ r)
+  | otherwise = Shape (r ++ nothingRows)
+    where
+      nothingRows = rows (emptyShape(abs i, length (head r)))
 
 -- ** A9
 -- | padShape adds empty sqaure below and to the right of the shape
 padShape :: (Int, Int) -> Shape -> Shape
-padShape = error "A9 padShape undefined"
+padShape (x, y) s = moveX (-x) (moveY (-y) s)
 
 -- ** A10
 -- | pad a shape to a given size
 padShapeTo :: (Int, Int) -> Shape -> Shape
-padShapeTo = error "A10 padShapeTo undefined"
+padShapeTo (x, y) s
+  | x < init_x || y < init_y = s
+  | otherwise = padShape (subtract init_x x, subtract init_y y) s
+    where (init_x, init_y) = shapeSize s
 
 -- * Comparing and combining shapes
 
