@@ -5,6 +5,9 @@ Copyright   : (c) TDA555/DIT441, Introduction to Functional Programming
 License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
+
+Authors     : Sebastian Pålsson, Tim Persson, Gustav Dalemo
+Lab group   : 9
 -}
 
 module Shapes where
@@ -76,9 +79,13 @@ allShapes = [Shape (makeSquares s) | s <- shapes]
 
 -- ** A1
 emptyShape :: (Int, Int) -> Shape
-emptyShape (n, x) = Shape (replicate n (replicate x Nothing))
+emptyShape (m, n) = Shape (replicate m (replicate n Nothing))
 
 -- ** A2
+
+testShape = Shape[[Nothing, Just Grey]
+                 ,[Nothing, Just Grey]
+                 ,[Just Grey, Just Grey]]
 
 -- | The size (width and height) of a shape
 shapeSize :: Shape -> (Int, Int)
@@ -101,17 +108,16 @@ blockCount (Shape (r:rs)) = rowCount r + blockCount (Shape rs)
 
 -- ** A4
 -- | Shape invariant (shapes have at least one row, at least one column, and are rectangular)
+
 prop_Shape :: Shape -> Bool
-prop_Shape (Shape []) = False
-prop_Shape (Shape (r:rs))
-  | null r = False
-  | not (eqLength (r:rs)) = False
-  | otherwise = True
-    where
-      eqLength :: [Row] -> Bool -- Checks if all rows in a list have the same length
-      eqLength [] = True
-      eqLength (x:xs) = length (x:xs) == 1 || 
-                        length x == length (head xs) && eqLength xs
+prop_Shape (Shape rows) = not (null rows) && eqLength rows
+  where
+    eqLength [] = True
+    eqLength r
+      | length r == 1 = True
+    eqLength (r1 : r2 : rs)
+      | not (null r1) && length r1 == length r2 = eqLength rs
+      | otherwise = False
 
 -- * Test data generators
 
@@ -148,8 +154,16 @@ shiftShape (x, y) s = moveX x (moveY y s)
 moveX :: Int -> Shape -> Shape
 moveX _ (Shape []) = Shape []
 moveX i (Shape (r:rs))
-  | i >= 0 = Shape ((replicate i Nothing ++ r) : rows (moveX i (Shape rs)))
-  | otherwise = Shape ((r ++ replicate (abs i) Nothing) : rows (moveX i (Shape rs)))
+  | i >= 0 = Shape ( (replicate i Nothing ++ r) : rows (moveX i (Shape rs)) )
+  | otherwise = Shape ( (r ++ replicate (abs i) Nothing) : rows (moveX i (Shape rs)) )
+
+{- ** Alternative function for moveX
+moveX':: Int -> Shape -> Shape 
+moveX' n s =  rotateShape(moveY n (tilt s))
+  where
+    tilt :: Shape -> Shape
+    tilt ns = rotateShape(rotateShape(rotateShape(ns))) 
+-}
 
 -- Moves a shape up or down depending on the value of "i" (Used in A8 & A9)
 moveY :: Int -> Shape -> Shape
