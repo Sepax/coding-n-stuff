@@ -245,3 +245,71 @@ numOccurrences' x ys = sum [1 | x' <- ys, x == x']
 numOccurrences'' :: Eq a => a -> [a] -> Int
 numOccurrences'' x ys = length [x' | x' <- ys, x == x']
 
+
+-- BAG function
+bag :: Eq a => [a] -> [(a,Int)]
+bag xs = nub [(e,amt) | e <- xs, amt <- [amt | amt <- [numOccurrences'' e xs]]]
+
+-- This is unneccessary but fun!
+displayBag :: Show a => [(a,Int)] -> IO ()
+displayBag [] = return ()
+displayBag (x:xs) = do
+  putStrLn (show x)
+  displayBag xs
+
+
+-- | 7. Elements and Positions
+
+letters = "abcdef"
+
+positions :: [a] -> [(a,Int)]
+positions xs = zip xs [0..]
+
+firstPosition :: Eq a => a -> [(a,Int)] -> Int
+firstPosition e (x:xs)
+  | e `notElem` map fst (x:xs) = error "error: Element is not in list"
+  | e == fst x = snd x
+  | otherwise = firstPosition e xs
+
+-- We create a list that adds all elements from the given list, except the element
+-- that is on the index that it first occurs in the original list. (Tricky this one)
+remove1st :: Eq a => a -> [a] -> [a]
+remove1st x xs = [e | (e,i) <- positions xs, i /= firstPosition x (positions xs)]
+
+{-
+remove1st 'l' "hello"
+[e | (e,i) <- positions "hello", i /= firstPosition 'l' (positions "hello")]
+[e | (e,i) <- [('h',0),('e',1),('l',2),('l',3),('o',4)], i /= firstPosition 'l' [('h',0),('e',1),('l',2),('l',3),('o',4)]]
+[e | (e,i) <- [('h',0),('e',1),('l',2),('l',3),('o',4)], i /= 2]
+['h','e','l','o']
+"helo"
+-}
+
+
+-- | 8. List Comprehensions
+-- Experiment with the function:
+pairs :: [a] -> [b] -> [(a,b)]
+pairs xs ys = [(x,y) | x <- xs, y <- ys]
+
+-- What does it do?
+-- It creates every possible pairs that can be made from the elements
+-- in the given lists. First, it takes the first element of xs and pairs is with
+-- every element in ys. When ys run out of elements, it moves on to the second
+-- element of xs and repeat the process. 
+
+
+-- All pythagorean triads with a<=b<=c<=100
+pytTriads :: [(Int,Int,Int)]
+pytTriads = [(x,y,z) | x <- [1..100], y <- [1..100], z <- [1..100], x*x + y*y + z*z <= 100]
+
+-- This is just very neat and candy for the eyes! :D
+-- Call the function with pytTriads as it's argument!
+showPytTriads :: [(Int,Int,Int)] -> IO ()
+showPytTriads [] = return ()
+showPytTriads ((a,b,c):xs) = do
+  putStr (show (a,b,c))
+  putStr " sum: "
+  putStrLn (show(a*a + b*b + c*c))
+  showPytTriads xs
+
+
