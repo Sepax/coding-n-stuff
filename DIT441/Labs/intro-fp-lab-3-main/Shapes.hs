@@ -30,7 +30,6 @@ showShape :: Shape -> String
 showShape s = unlines [showRow r | r <- rows s]
  where
   showRow r = [showSquare s | s <- r]
-
   showSquare Nothing      = '.'
   showSquare (Just Black) = '#' -- can change to '█' on linux/mac
   showSquare (Just Grey)  = 'g' -- can change to '▓'
