@@ -1,6 +1,6 @@
 -- Exercises week 3
 
-import Data.List (nub)
+import Data.List (nub,sort)
 import Test.QuickCheck
 import Test.QuickCheck.Property (failed, reason, succeeded)
 --import Data.Maybe
@@ -83,46 +83,18 @@ insert' 3 (2:4:[])
 -}
 
 -- | 3*. Pascal's Triangle
--- It Works but not the first row...
-pascal :: Int -> [Int]
-pascal 0 = []
-pascal n = [1] ++ sum2 (pascal (n -1)) ++ [1]
+-- My first attempt failed (kind of) so heres the solution...:
 
---  where
-sum2 [] = []
-sum2 [x] = [x]
-sum2 (x : xs) = [sum [x, y] | (x, y) <- zip (x : xs) xs]
-
-{-
-Evaluating pascal 3:
-pascal 3 -}
-eval1 =
-  [ [1] ++ sum2 (pascal 2) ++ [1],
-    [1] ++ sum2 ([1] ++ sum2 (pascal 1) ++ [1]) ++ [1],
-    [1] ++ sum2 ([1] ++ sum2 ([1] ++ sum2 (pascal 0) ++ [1]) ++ [1]) ++ [1],
-    [1] ++ sum2 ([1] ++ sum2 ([1] ++ sum2 [] ++ [1]) ++ [1]) ++ [1],
-    [1] ++ sum2 ([1] ++ sum2 ([1] ++ [] ++ [1]) ++ [1]) ++ [1],
-    [1] ++ sum2 ([1] ++ sum2 [1, 1] ++ [1]) ++ [1],
-    [1] ++ sum2 ([1] ++ ([sum [x, y] | (x, y) <- zip [1, 1] [1]]) ++ [1]) ++ [1],
-    [1] ++ sum2 ([1] ++ [2] ++ [1]) ++ [1],
-    [1] ++ sum2 [1, 2, 1] ++ [1],
-    [1] ++ ([sum [x, y] | (x, y) <- zip [1, 2, 1] [2, 1]]) ++ [1],
-    [1] ++ [3, 3] ++ [1],
-    [1, 3, 3, 1]
-  ]
-
--- According to solutions...:
 pascal' :: Int -> [Int]
 pascal' 1 = [1]
 pascal' n = [1] ++ [x + y | (x, y) <- pairs (pascal' (n -1))] ++ [1]
-
---  where
-pairs (x : y : xs) = (x, y) : pairs (y : xs)
-pairs _ = []
+  where
+    pairs (x : y : xs) = (x, y) : pairs (y : xs)
+    pairs _ = []
 
 --Evaluating pascal' 3:
 --pascal'3
-eval2 =
+{- eval2 =
   [ [1] ++ [x + y | (x, y) <- pairs (pascal' 2)] ++ [1],
     [1] ++ [x + y | (x, y) <- pairs ([1] ++ [x + y | (x, y) <- pairs (pascal' 1)] ++ [1])] ++ [1],
     [1] ++ [x + y | (x, y) <- pairs ([1] ++ [x + y | (x, y) <- pairs [1]] ++ [1])] ++ [1],
@@ -135,7 +107,7 @@ eval2 =
     [1] ++ [x + y | (x, y) <- [(1, 1)]] ++ [1],
     [1] ++ [2] ++ [1],
     [1, 2, 1]
-  ]
+  ] -}
 
 -- Just for fun!
 pascalShow :: [[Int]] -> IO ()
@@ -144,4 +116,132 @@ pascalShow (x : xs) = do
   putStrLn (show x)
   pascalShow xs
 
-pascalList n = [pascal x | x <- [1 .. n]]
+pascalList n = [pascal' x | x <- [1 .. n]]
+
+-- | 4*. Erastosthenes' sieve
+-- Anctient method of finding prime numbers.
+
+-- Version that usess list comprehension.
+-- Adds a number to the list if the remainder is not 0, i.e.
+-- x is not a multiple of m.
+crossOut :: Int -> [Int] -> [Int]
+crossOut n xs = [x | x <- xs, mod x n /= 0]
+
+-- Recursive version!
+sieve :: [Int] -> [Int]
+sieve [] = []
+sieve (1:xs) = sieve xs
+sieve (x:xs) = x:sieve (crossOut x xs)
+
+{-
+sieve [1,2,3,4,5,6,7,8,9,10]
+sieve (1:2:3:4:5:6:7:8:9:10:[])
+sieve (2:3:4:5:6:7:8:9:10:[])
+2:sieve(crossOut 2 (3:4:5:6:7:8:9:10:[]))
+2:sieve[x | x <- [3,4,5,6,7,8,9,10], mod x 2 /= 0]
+2:sieve(3:5:7:9[])
+2:3:sieve(crossOut 3 (5,7,9:[]))
+2:3:sieve[x | x <- [5,7,9], mod x 3 /= 0]
+2:3:sieve[5,7]
+2:3:5:sieve[crossOut 5 (7:[])]
+2:3:5:sieve[x | x <- [7], mod x 5 /= 0]
+2:3:5:sieve(7:[])
+2:3:5:7:sieve(crossOut 7 [])
+2:3:5:7:sieve[x | x <- [], mod x 7 /= 0]
+2:3:5:7:sieve[]
+2:3:5:7:[]
+[2,3,5,7]
+-}
+primes1To100 = sieve [1..100]
+
+prop_Sieve :: Int -> Bool
+prop_Sieve n = and [isPrime n | n <- sieve [1..n]]
+  where
+    isPrime n = factors n == [1,n]
+    factors n = [k | k <- [1..n], mod n k == 0]
+
+-- | 5*. Number 
+
+-- This uses the primes1To100, which uses the sieve function to check
+-- whether n belongs to that list of primes. If it doesn't, it's not a prime.
+isNPrime :: Int -> Bool
+isNPrime n = n `elem` primes1To100
+
+-- This creates a list of tuples, where the elements in each tuple are primes and
+-- who's sum is n.
+-- If the list is empty, there are no pair of primes which sum is n, and therefore
+-- n is a prime.
+isNSumOfPrimes :: Int -> Bool
+isNSumOfPrimes n = not (null ([(a,b) | a <- primes1To100, b <- primes1To100, n == a+b]))
+
+-- This returns counterExamples. It creates a list of each number from 4 to 100,
+-- that is even and that isn't a sum of primes (using the isNSumOfPrimes function).
+-- If this list were to be anything but empty, we have an example of when the
+-- hypothesis is false. But, when running this, we get the empty list, which means
+-- the hypothesis is in fact True.  
+counterExamples :: [Int]
+counterExamples = [n | n <- [4..100], even n, not(isNSumOfPrimes n)]
+
+
+-- | 6. Occurences in Lists
+
+-- Using the @elem@ function, we can check whether x occurs in xs
+occursIn :: Eq a => a -> [a] -> Bool
+occursIn _ [] = False
+occursIn x xs = x `elem` xs
+
+-- Using recursion to check every element in the first list to check if they are
+-- all occuring in the second list. As soon as one element is not occuring,
+-- we stop checking and return False.  
+allOccurIn :: Eq a => [a] -> [a] -> Bool
+allOccurIn [] ys = True
+allOccurIn (x:xs) ys
+  | x `notElem` ys = False
+  | otherwise = allOccurIn xs ys
+
+-- Using the previously defined function @allOccurIn@ we can check if all elements
+-- from xs occur in ys and vice versa. If they do, then it means both lists contains
+-- exactly the same elements. (possibly in a different order)
+sameElements :: Eq a => [a] -> [a] -> Bool
+sameElements xs ys = allOccurIn xs ys && allOccurIn ys xs
+
+-- Easy recursion method. Just adds 1 when the element matches with each element
+-- in the list.
+numOccurrences :: Eq a => a -> [a] -> Int
+numOccurrences x [] = 0
+numOccurrences x (y:ys)
+  | x == y = 1 + numOccurrences x ys
+  | otherwise = numOccurrences x ys
+
+-- !!!
+-- I dind't read the full task... I was not meant to do recursive functions... 
+-- Let's do them all again using list comprehension instead:
+
+
+-- We create a list of all elements from the list that matches with our control.
+-- If the list isn't empty, it means that the element did occur in the list!
+occursIn' :: Eq a => a -> [a] -> Bool
+occursIn' x xs = not (null([x' | x' <- xs, x == x']))
+
+-- Using the predefined function @coccursIn'@ as a guard, we create a list of
+-- all elements that occurs in ys and then checks if the length of xs 
+-- is the same "before and after".
+allOccurIn' :: Eq a => [a] -> [a] -> Bool
+allOccurIn' xs ys = length [x | x <- xs, x `occursIn'` ys] == length xs
+
+-- Using the predefined function @allOccurIn'@, we can check both directions
+-- of implication (==>, <==). If we have both, then we know that they contain
+-- exactly the same elements.
+sameElements' :: Eq a => [a] -> [a] -> Bool
+sameElements' xs ys = allOccurIn' xs ys && allOccurIn' ys xs
+
+-- Creates a lists of 1's, one for each element in the list that matches 
+-- with the given element. Then using @sum@ to get the number of occurences.
+numOccurrences' :: Eq a => a -> [a] -> Int
+numOccurrences' x ys = sum [1 | x' <- ys, x == x']
+
+-- Alternative version of the on before. Here we just check the length of the
+-- list instead.
+numOccurrences'' :: Eq a => a -> [a] -> Int
+numOccurrences'' x ys = length [x' | x' <- ys, x == x']
+
