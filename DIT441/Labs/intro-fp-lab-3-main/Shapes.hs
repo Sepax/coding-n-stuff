@@ -108,11 +108,10 @@ prop_Shape :: Shape -> Bool
 prop_Shape (Shape rows) = not (null rows) && eqLength rows
   where
     eqLength [] = True
-    eqLength r
-      | length r == 1 = True
-    eqLength (r1 : r2 : rs)
-      | not (null r1) && length r1 == length r2 = eqLength rs
+    eqLength (r:rs)
+      | length r * length (r:rs) == length (concat (r:rs)) = eqLength rs
       | otherwise = False
+
 
 -- * Test data generators
 
