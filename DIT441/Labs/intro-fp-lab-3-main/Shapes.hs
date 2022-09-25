@@ -97,7 +97,7 @@ shapeSize s = (length (head (rows s)), length (rows s))
 -- | Count how many non-empty squares a shape contains
 blockCount :: Shape -> Int
 blockCount (Shape []) = 0
-blockCount s = length [x | x <- concat (rows s), x /= Nothing]
+blockCount (Shape r) = length [x | x <- concat r, x /= Nothing]
 
 -- * The Shape invariant
 
