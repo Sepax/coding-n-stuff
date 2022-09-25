@@ -105,6 +105,10 @@ blockCount (Shape (r:rs)) = rowCount r + blockCount (Shape rs)
       | isNothing x = rowCount xs
       | otherwise = 1 + rowCount xs
 
+blockCount' :: Shape -> Int
+blockCount' (Shape []) = 0
+blockCount' s = length [x | x <- concat (rows s), x /= Nothing]
+
 -- * The Shape invariant
 
 -- ** A4
