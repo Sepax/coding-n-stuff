@@ -108,9 +108,7 @@ prop_Shape :: Shape -> Bool
 prop_Shape (Shape rows) = not (null rows) && eqLength rows
   where
     eqLength [] = True
-    eqLength (r:rs)
-      | length r * length (r:rs) == length (concat (r:rs)) = eqLength rs
-      | otherwise = False
+    eqLength (r:rs) = length r * length (r:rs) == length (concat (r:rs))
 
 
 -- * Test data generators
@@ -153,13 +151,12 @@ moveX i (Shape (r:rs))
     where replNothing = replicate (abs i) Nothing
           recurMoveX = rows (moveX i (Shape rs))
 
-{- ** Alternative function for moveX
+-- ** Alternative function for moveX
 moveX':: Int -> Shape -> Shape 
 moveX' n s =  rotateShape(moveY n (tilt s))
   where
     tilt :: Shape -> Shape
-    tilt ns = rotateShape(rotateShape(rotateShape(ns))) 
--}
+    tilt = rotateShape . rotateShape . rotateShape
 
 -- Moves a shape up or down depending on the value of "i" (Used in A8 & A9)
 moveY :: Int -> Shape -> Shape
