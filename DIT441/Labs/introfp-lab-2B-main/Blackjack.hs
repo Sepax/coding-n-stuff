@@ -1,5 +1,5 @@
 module Blackjack where
-
+import Data.List (sortOn)
 import Cards
 import RunGame
 import Test.QuickCheck hiding (shuffle)
@@ -164,6 +164,8 @@ shuffle (x : xs) d = c' : shuffle xs d'
   where
     (d', c') = takeCard (randomIndex (x : xs) d) d
 
+shuffle' ds d = map snd (sortOn fst (zip ds d))
+
 -- Removes the card at index i and returns the modified deck and the card
 takeCard :: Int -> Deck -> (Deck, Card)
 takeCard _ [] = ([], Card Ace Spades)
@@ -185,7 +187,7 @@ prop_shuffle c d (Rand randomlist) =
 
 prop_size_shuffle :: Rand -> Deck -> Bool
 prop_size_shuffle (Rand randomlist) d =
-  length d == length (shuffle randomlist d)
+  length d == length (shuffle' randomlist d)
 
 implementation =
   Interface
