@@ -163,8 +163,8 @@ moveY :: Int -> Shape -> Shape
 moveY i (Shape r)
   | i > 0 = Shape (nothingRows ++ r)
   | otherwise = Shape (r ++ nothingRows)
-    where
-      nothingRows = rows (emptyShape(abs i, length (head r)))
+    where 
+      nothingRows = rows (emptyShape(length (head r), abs i))
 
 -- ** A9
 -- | padShape adds empty sqaure below and to the right of the shape
