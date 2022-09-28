@@ -79,7 +79,7 @@ allShapes = [Shape (makeSquares s) | s <- shapes]
 
 -- ** A1
 emptyShape :: (Int, Int) -> Shape
-emptyShape (m, n) = Shape (replicate m (replicate n Nothing))
+emptyShape (w, h) = Shape (replicate h (replicate w Nothing))
 
 -- ** A2
 
@@ -89,6 +89,7 @@ testShape = Shape[[Nothing, Just Grey]
 
 -- | The size (width and height) of a shape
 shapeSize :: Shape -> (Int, Int)
+shapeSize (Shape []) = (0,0)
 shapeSize s = (length (head (rows s)), length (rows s))
 
 -- ** A3
@@ -96,13 +97,7 @@ shapeSize s = (length (head (rows s)), length (rows s))
 -- | Count how many non-empty squares a shape contains
 blockCount :: Shape -> Int
 blockCount (Shape []) = 0
-blockCount (Shape (r:rs)) = rowCount r + blockCount (Shape rs)
-  where
-    rowCount :: Row -> Int
-    rowCount [] = 0
-    rowCount (x:xs)
-      | isNothing x = rowCount xs
-      | otherwise = 1 + rowCount xs
+blockCount (Shape r) = length [x | x <- concat r, x /= Nothing]
 
 -- * The Shape invariant
 
@@ -113,11 +108,8 @@ prop_Shape :: Shape -> Bool
 prop_Shape (Shape rows) = not (null rows) && eqLength rows
   where
     eqLength [] = True
-    eqLength r
-      | length r == 1 = True
-    eqLength (r1 : r2 : rs)
-      | not (null r1) && length r1 == length r2 = eqLength rs
-      | otherwise = False
+    eqLength (r:rs) = length r * length (r:rs) == length (concat (r:rs))
+
 
 -- * Test data generators
 
@@ -154,16 +146,17 @@ shiftShape (x, y) s = moveX x (moveY y s)
 moveX :: Int -> Shape -> Shape
 moveX _ (Shape []) = Shape []
 moveX i (Shape (r:rs))
-  | i >= 0 = Shape ( (replicate i Nothing ++ r) : rows (moveX i (Shape rs)) )
-  | otherwise = Shape ( (r ++ replicate (abs i) Nothing) : rows (moveX i (Shape rs)) )
+  | i >= 0 = Shape ( (replNothing ++ r) : recurMoveX )
+  | otherwise = Shape ( (r ++ replNothing) : recurMoveX )
+    where replNothing = replicate (abs i) Nothing
+          recurMoveX = rows (moveX i (Shape rs))
 
-{- ** Alternative function for moveX
+-- ** Alternative function for moveX
 moveX':: Int -> Shape -> Shape 
 moveX' n s =  rotateShape(moveY n (tilt s))
   where
     tilt :: Shape -> Shape
-    tilt ns = rotateShape(rotateShape(rotateShape(ns))) 
--}
+    tilt = rotateShape . rotateShape . rotateShape
 
 -- Moves a shape up or down depending on the value of "i" (Used in A8 & A9)
 moveY :: Int -> Shape -> Shape
