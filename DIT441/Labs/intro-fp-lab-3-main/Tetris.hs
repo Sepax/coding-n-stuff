@@ -67,7 +67,7 @@ prop_Tetris t = prop_Shape (snd(piece t)) && shapeSize (well t) == wellSize
 
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
-addWalls s = last (take 5 $iterate wallThenRotate s)
+addWalls s = last (take 5 $ iterate wallThenRotate s)
   where
     wallThenRotate:: Shape -> Shape
     wallThenRotate (Shape rs) = rotateShape (Shape ([Just Black | _ <- [1..(length (head rs))]] : rs))
