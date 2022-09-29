@@ -20,13 +20,13 @@ main :: IO ()
 main = runGame tetrisGame
 
 tetrisGame :: Game Tetris
-tetrisGame = Game 
+tetrisGame = Game
   { startGame     = startTetris
   , stepGame      = stepTetris
   , drawGame      = drawTetris
   , gameInfo      = defaultGameInfo prop_Tetris
   , tickDelay     = defaultDelay
-  , gameInvariant = prop_Tetris 
+  , gameInvariant = prop_Tetris
   }
 
 --------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ tetrisGame = Game
 type Pos   = (Int, Int)
 
 -- | The state of the game consists of three parts:
-data Tetris = Tetris 
+data Tetris = Tetris
   { piece  :: (Pos, Shape)  -- ^ The position and shape of the falling piece
   , well   :: Shape         -- ^ The well (the playing field), where the falling pieces pile up
   , shapes :: [Shape]       -- ^ An infinite supply of random shapes
@@ -63,11 +63,14 @@ place (v, s) = shiftShape v s
 
 -- | An invariant that startTetris and stepTetris should uphold
 prop_Tetris :: Tetris -> Bool
-prop_Tetris t = True -- incomplete !!!
+prop_Tetris t = prop_Shape (snd(piece t)) && shapeSize (well t) == wellSize
 
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
-addWalls s = s -- incomplete !!!
+addWalls s = last (take 5 $iterate wallThenRotate s)
+  where
+    wallThenRotate:: Shape -> Shape
+    wallThenRotate (Shape rs) = rotateShape (Shape ([Just Black | _ <- [1..(length (head rs))]] : rs))
 
 -- | Visualize the current game state. This is what the user will see
 -- when playing the game.
