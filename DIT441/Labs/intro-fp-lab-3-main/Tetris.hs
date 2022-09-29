@@ -87,4 +87,10 @@ startTetris rs = Tetris (startPosition, piece) well supply
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
-stepTetris action t = Just (0, t) -- incomplete !!!
+stepTetris action t = tick t
+  where
+    move :: Pos -> Tetris -> Tetris
+    move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
+
+    tick :: Tetris -> Maybe (Int, Tetris)
+    tick t = Just (0,move (0,1) t)
