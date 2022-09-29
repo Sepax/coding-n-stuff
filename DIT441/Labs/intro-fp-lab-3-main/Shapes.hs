@@ -212,7 +212,3 @@ s1 `combine` s2 = zipShapeWith mergeSquares (padShapeTo combinedSize s1) (padSha
         (x1, y1) = shapeSize s1
         (x2, y2) = shapeSize s2
 
-eqShape = moveY 3 $moveX 3 $ allShapes !! 1
-eqShape2 = padShapeTo (5,6) $ allShapes !! 2
-notEqShape = padShapeTo (8,5) $ allShapes !! 1
-
