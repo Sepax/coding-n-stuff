@@ -75,7 +75,7 @@ addWalls s = last (take 5 $iterate wallThenRotate s)
 -- | Visualize the current game state. This is what the user will see
 -- when playing the game.
 drawTetris :: Tetris -> Shape
-drawTetris (Tetris (v, p) w _) = w -- incomplete !!!
+drawTetris (Tetris (v, p) w _) = addWalls (combine w (place (v,p)))
 
 -- | The initial game state
 startTetris :: [Double] -> Tetris
