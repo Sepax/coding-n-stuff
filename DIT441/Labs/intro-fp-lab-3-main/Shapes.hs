@@ -13,7 +13,7 @@ Lab group   : 9
 module Shapes where
 
 import Data.List (transpose)
-import Data.Maybe (isNothing)
+import Data.Maybe (isNothing, isJust)
 import Test.QuickCheck
 
 -- * Shapes
@@ -185,7 +185,10 @@ padShapeTo (x, y) s
 
 -- | Test if two shapes overlap
 overlaps :: Shape -> Shape -> Bool
-s1 `overlaps` s2 = error "A11 overlaps undefined"
+s1 `overlaps` s2 = or (zipWith rowsOverlap (rows s1) (rows s2))
+  where
+    rowsOverlap :: Row -> Row -> Bool
+    rowsOverlap r1 r2 = or [all Data.Maybe.isJust [e1,e2] | (e1,e2) <- zip r1 r2]
 
 -- ** B2
 -- | zipShapeWith, like 'zipWith' for lists
