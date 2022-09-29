@@ -152,7 +152,7 @@ moveX i (Shape (r:rs))
           recurMoveX = rows (moveX i (Shape rs))
 
 -- ** Alternative function for moveX
-moveX':: Int -> Shape -> Shape 
+moveX':: Int -> Shape -> Shape
 moveX' n s =  rotateShape(moveY n (tilt s))
   where
     tilt :: Shape -> Shape
@@ -163,7 +163,7 @@ moveY :: Int -> Shape -> Shape
 moveY i (Shape r)
   | i > 0 = Shape (nothingRows ++ r)
   | otherwise = Shape (r ++ nothingRows)
-    where 
+    where
       nothingRows = rows (emptyShape(length (head r), abs i))
 
 -- ** A9
@@ -193,10 +193,26 @@ s1 `overlaps` s2 = or (zipWith rowsOverlap (rows s1) (rows s2))
 -- ** B2
 -- | zipShapeWith, like 'zipWith' for lists
 zipShapeWith :: (Square -> Square -> Square) -> Shape -> Shape -> Shape
-zipShapeWith = error "A12 zipShapeWith undefined"
+zipShapeWith f s1 s2 = Shape ([zipWith f x y | (x,y) <- zip (rows s1) (rows s2)])
 
 -- ** B3
 -- | Combine two shapes. The two shapes should not overlap.
 -- The resulting shape will be big enough to fit both shapes.
 combine :: Shape -> Shape -> Shape
-s1 `combine` s2 = error "A13 zipShapeWith undefined"
+s1 `combine` s2 = zipShapeWith mergeSquares (padShapeTo combinedSize s1) (padShapeTo combinedSize s2)
+  where
+    mergeSquares :: Square -> Square -> Square
+    mergeSquares sq Nothing = sq
+    mergeSquares Nothing sq = sq
+    mergeSquares _ _ = error "Overlapping squares"
+
+    combinedSize :: (Int, Int)
+    combinedSize = (max x1 x2, max y1 y2)
+      where  
+        (x1, y1) = shapeSize s1
+        (x2, y2) = shapeSize s2
+
+eqShape = moveY 3 $moveX 3 $ allShapes !! 1
+eqShape2 = padShapeTo (5,6) $ allShapes !! 2
+notEqShape = padShapeTo (8,5) $ allShapes !! 1
+
