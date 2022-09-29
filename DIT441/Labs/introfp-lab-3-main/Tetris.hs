@@ -13,6 +13,7 @@ import ConsoleGUI
 -- import ThreepennyGUI  -- either use ConsoleGUI or ThreepennyGUI
 
 import Shapes
+import Test.QuickCheck
 
 --------------------------------------------------------------------------------
 -- * The code that puts all the piece together
@@ -63,16 +64,26 @@ place (v, s) = shiftShape v s
 
 -- | An invariant that startTetris and stepTetris should uphold
 prop_Tetris :: Tetris -> Bool
-prop_Tetris t = True -- incomplete !!!
+prop_Tetris t = prop_Shape (snd(piece t)) && shapeSize (well t) == wellSize
 
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
-addWalls s = s -- incomplete !!!
+addWalls s = Shape(wallTopBot s: rows (padShapeWith wallSides s) ++ [wallTopBot s])
+ where
+  wallTopBot s = replicate (fst(shapeSize s)+2) (Just Black)
+  wallSides r = [Just Black] ++ r ++ [Just Black]
+
+padShapeWith :: (Row -> Row) -> Shape -> Shape
+padShapeWith f (Shape rows) = Shape (padShapeWith' f rows)
+  where
+    padShapeWith' f [] = []
+    padShapeWith' f (r:rs) = f r : padShapeWith' f rs
+
 
 -- | Visualize the current game state. This is what the user will see
 -- when playing the game.
 drawTetris :: Tetris -> Shape
-drawTetris (Tetris (v, p) w _) = w -- incomplete !!!
+drawTetris (Tetris (v, p) w _) = addWalls (combine (shiftShape v p) w) -- incomplete !!!
 
 -- | The initial game state
 startTetris :: [Double] -> Tetris
@@ -84,4 +95,10 @@ startTetris rs = Tetris (startPosition, piece) well supply
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
-stepTetris action t = Just (0, t) -- incomplete !!!
+stepTetris Tick = tick -- incomplete !!!
+
+move :: Pos -> Tetris -> Tetris
+move pos (Tetris (v,p) w s) = Tetris (add pos v,p)w s
+
+tick :: Tetris -> Maybe (Int, Tetris)
+tick t = Just (0,move (0,1) t)
