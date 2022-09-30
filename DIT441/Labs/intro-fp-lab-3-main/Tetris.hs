@@ -67,10 +67,10 @@ prop_Tetris t = prop_Shape (snd(piece t)) && shapeSize (well t) == wellSize
 
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
-addWalls s = last (take 5 $ iterate wallThenRotate s)
+addWalls = wallThenRotate . wallThenRotate . wallThenRotate . wallThenRotate
   where
-    wallThenRotate:: Shape -> Shape
-    wallThenRotate (Shape rs) = rotateShape (Shape ([Just Black | _ <- [1..(length (head rs))]] : rs))
+    wallThenRotate :: Shape -> Shape
+    wallThenRotate s = rotateShape (Shape (replicate (fst $ shapeSize s) (Just Black) : rows s))
 
 -- | Visualize the current game state. This is what the user will see
 -- when playing the game.
@@ -87,7 +87,10 @@ startTetris rs = Tetris (startPosition, piece) well supply
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
-stepTetris action t = tick t
+stepTetris Tick = tick {-
+stepTetris MoveLeft t = ...
+stepTetris MoveRigt t = ...
+... -}
   where
     move :: Pos -> Tetris -> Tetris
     move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
