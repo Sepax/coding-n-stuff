@@ -9,13 +9,13 @@ Stability   : experimental
 Authors     : Sebastian Pålsson, Tim Persson, Gustav Dalemo
 Lab group   : 9
 -}
+
 module Main where
 
 import ConsoleGUI
 -- import ThreepennyGUI  -- either use ConsoleGUI or ThreepennyGUI
 
 import Shapes
-import Test.QuickCheck
 
 --------------------------------------------------------------------------------
 -- * The code that puts all the piece together
@@ -23,13 +23,13 @@ main :: IO ()
 main = runGame tetrisGame
 
 tetrisGame :: Game Tetris
-tetrisGame = Game 
+tetrisGame = Game
   { startGame     = startTetris
   , stepGame      = stepTetris
   , drawGame      = drawTetris
   , gameInfo      = defaultGameInfo prop_Tetris
   , tickDelay     = defaultDelay
-  , gameInvariant = prop_Tetris 
+  , gameInvariant = prop_Tetris
   }
 
 --------------------------------------------------------------------------------
@@ -38,6 +38,7 @@ tetrisGame = Game
 type Pos   = (Int, Int)
 
 -- | The state of the game consists of three parts:
+
 data Tetris = Tetris 
   { piece  :: (Pos, Shape)  -- ^ The position and shape of the falling piece
   , well   :: Shape         -- ^ The well (the playing field), where the falling pieces pile up
@@ -94,9 +95,9 @@ stepTetris Tick = tick {-
 stepTetris MoveLeft t = ...
 stepTetris MoveRigt t = ...
 ... -}
+  where
+    move :: Pos -> Tetris -> Tetris
+    move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
 
-move :: Pos -> Tetris -> Tetris
-move pos (Tetris (v,p) w s) = Tetris (add pos v,p)w s
-
-tick :: Tetris -> Maybe (Int, Tetris)
-tick t = Just (0,move (0,1) t)
+    tick :: Tetris -> Maybe (Int, Tetris)
+    tick t = Just (0,move (0,1) t)

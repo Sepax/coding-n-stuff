@@ -160,7 +160,7 @@ moveY i (Shape r)
   | i > 0 = Shape (nothingRows ++ r)
   | otherwise = Shape (r ++ nothingRows)
     where
-      nothingRows = rows (emptyShape(length (head r),abs i))
+      nothingRows = rows (emptyShape(length (head r), abs i))
 
 -- ** A9
 -- | padShape adds empty sqaure below and to the right of the shape
@@ -196,6 +196,7 @@ zipShapeWith f s1 s2 = Shape ([zipWith f x y | (x,y) <- zip (rows s1) (rows s2)]
 -- | Combine two shapes. The two shapes should not overlap.
 -- The resulting shape will be big enough to fit both shapes.
 combine :: Shape -> Shape -> Shape
+
 s1 `combine` s2 = zipShapeWith mergeSqrs (padShapeTo combSize s1) (padShapeTo combSize s2)
   where
     mergeSqrs :: Square -> Square -> Square
@@ -208,18 +209,3 @@ s1 `combine` s2 = zipShapeWith mergeSqrs (padShapeTo combSize s1) (padShapeTo co
       where
         (x1,y1) = shapeSize s1
         (x2,y2) = shapeSize s2 
-
-testShape1 = Shape[[Nothing , Just Grey]
-                 ,[Nothing  , Just Grey]
-                 ,[Just Grey, Just Grey]]
-
-testShape2 = Shape[[Just Black, Nothing]
-                  ,[Just Black, Nothing]
-                  ,[Nothing   , Nothing]]
-
-testShape3 = Shape[[Just Green, Just Green]
-                  ,[Just Green, Just Green]
-                  ,[Just Green, Just Green]]
-
-testShape4 = Shape[[Nothing, Nothing, Just Red],
-                   [Nothing, Nothing, Just Red]]
