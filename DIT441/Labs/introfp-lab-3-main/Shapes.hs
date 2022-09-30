@@ -196,15 +196,15 @@ zipShapeWith f s1 s2 = Shape ([zipWith f x y | (x,y) <- zip (rows s1) (rows s2)]
 -- | Combine two shapes. The two shapes should not overlap.
 -- The resulting shape will be big enough to fit both shapes.
 combine :: Shape -> Shape -> Shape
-s1 `combine` s2 = zipShapeWith zipping (padShapeTo generateSize s1) (padShapeTo generateSize s2)
+s1 `combine` s2 = zipShapeWith mergeSqrs (padShapeTo combSize s1) (padShapeTo combSize s2)
   where
-    zipping :: Square -> Square -> Square
-    zipping sq1 Nothing = sq1
-    zipping Nothing sq2 = sq2
-    zipping _ _ = error "error: Two non-empty squares"
+    mergeSqrs :: Square -> Square -> Square
+    mergeSqrs sq1 Nothing = sq1
+    mergeSqrs Nothing sq2 = sq2
+    mergeSqrs _ _ = error "error: Two non-empty squares"
 
-    generateSize :: (Int,Int)
-    generateSize = (max x1 x2, max y1 y2)
+    combSize :: (Int,Int)
+    combSize = (max x1 x2, max y1 y2)
       where
         (x1,y1) = shapeSize s1
         (x2,y2) = shapeSize s2 
@@ -221,23 +221,5 @@ testShape3 = Shape[[Just Green, Just Green]
                   ,[Just Green, Just Green]
                   ,[Just Green, Just Green]]
 
-testShape4 = Shape [[Nothing, Just Grey, Nothing],
-                    [Nothing, Just Grey, Nothing],
-                    [Just Grey, Just Grey, Nothing],
-                    [Nothing, Nothing, Nothing]]
-
-testShape5 = Shape [[Nothing,Nothing,Nothing,Nothing],
-                    [Nothing,Nothing,Nothing,Nothing],
-                    [Nothing,Nothing,Nothing,Just Grey],
-                    [Nothing,Nothing,Nothing,Just Grey],
-                    [Nothing,Nothing,Just Grey,Just Grey]]
-
-testShape6 = Shape [[Nothing,Nothing,Nothing,Nothing],
-                    [Nothing,Nothing,Nothing,Nothing],
-                    [Nothing,Nothing,Nothing,Just Grey]]
-
-resultShape = Shape [[Nothing,Just Grey,Nothing,Nothing],
-                     [Nothing,Just Grey,Nothing,Nothing],
-                     [Just Grey,Just Grey,Nothing,Just Grey],
-                     [Nothing,Nothing,Nothing,Just Grey],
-                     [Nothing,Nothing,Just Grey,Just Grey]]
+testShape4 = Shape[[Nothing, Nothing, Just Red],
+                   [Nothing, Nothing, Just Red]]
