@@ -5,6 +5,9 @@ Copyright   : (c) TDA555/DIT441, Introduction to Functional Programming
 License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
+
+Authors     : Sebastian Pålsson, Tim Persson, Gustav Dalemo
+Lab group   : 9
 -}
 
 module Main where
@@ -35,7 +38,8 @@ tetrisGame = Game
 type Pos   = (Int, Int)
 
 -- | The state of the game consists of three parts:
-data Tetris = Tetris
+
+data Tetris = Tetris 
   { piece  :: (Pos, Shape)  -- ^ The position and shape of the falling piece
   , well   :: Shape         -- ^ The well (the playing field), where the falling pieces pile up
   , shapes :: [Shape]       -- ^ An infinite supply of random shapes

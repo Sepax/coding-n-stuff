@@ -83,10 +83,6 @@ emptyShape (w, h) = Shape (replicate h (replicate w Nothing))
 
 -- ** A2
 
-testShape = Shape[[Nothing, Just Grey]
-                 ,[Nothing, Just Grey]
-                 ,[Just Grey, Just Grey]]
-
 -- | The size (width and height) of a shape
 shapeSize :: Shape -> (Int, Int)
 shapeSize (Shape []) = (0,0)
@@ -187,8 +183,9 @@ padShapeTo (x, y) s
 overlaps :: Shape -> Shape -> Bool
 s1 `overlaps` s2 = or (zipWith rowsOverlap (rows s1) (rows s2))
   where
+    -- Checks if two elements on the same position are of type "Just". If yes, then they overlap.
     rowsOverlap :: Row -> Row -> Bool
-    rowsOverlap r1 r2 = or [all Data.Maybe.isJust [e1,e2] | (e1,e2) <- zip r1 r2]
+    rowsOverlap r1 r2 = or [all Data.Maybe.isJust [e1,e2]| (e1,e2) <- zip r1 r2]
 
 -- ** B2
 -- | zipShapeWith, like 'zipWith' for lists
@@ -199,16 +196,16 @@ zipShapeWith f s1 s2 = Shape ([zipWith f x y | (x,y) <- zip (rows s1) (rows s2)]
 -- | Combine two shapes. The two shapes should not overlap.
 -- The resulting shape will be big enough to fit both shapes.
 combine :: Shape -> Shape -> Shape
-s1 `combine` s2 = zipShapeWith mergeSquares (padShapeTo combinedSize s1) (padShapeTo combinedSize s2)
+
+s1 `combine` s2 = zipShapeWith mergeSqrs (padShapeTo combSize s1) (padShapeTo combSize s2)
   where
-    mergeSquares :: Square -> Square -> Square
-    mergeSquares sq Nothing = sq
-    mergeSquares Nothing sq = sq
-    mergeSquares _ _ = error "Overlapping squares"
+    mergeSqrs :: Square -> Square -> Square
+    mergeSqrs sq1 Nothing = sq1
+    mergeSqrs Nothing sq2 = sq2
+    mergeSqrs _ _ = error "error: Two non-empty squares"
 
-    combinedSize :: (Int, Int)
-    combinedSize = (max x1 x2, max y1 y2)
-      where  
-        (x1, y1) = shapeSize s1
-        (x2, y2) = shapeSize s2
-
+    combSize :: (Int,Int)
+    combSize = (max x1 x2, max y1 y2)
+      where
+        (x1,y1) = shapeSize s1
+        (x2,y2) = shapeSize s2 
