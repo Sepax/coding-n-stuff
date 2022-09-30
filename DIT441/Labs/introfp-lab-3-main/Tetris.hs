@@ -7,6 +7,9 @@ Maintainer  : alexg@chalmers.se
 Stability   : experimental
 -}
 
+-- Authors     : Sebastian Pålsson, Tim Persson, Gustav Dalemo
+-- Lab group   : 9
+
 module Main where
 
 import ConsoleGUI
