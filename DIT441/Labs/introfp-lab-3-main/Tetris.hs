@@ -5,11 +5,10 @@ Copyright   : (c) TDA555/DIT441, Introduction to Functional Programming
 License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
+
+Authors     : Sebastian Pålsson, Tim Persson, Gustav Dalemo
+Lab group   : 9
 -}
-
--- Authors     : Sebastian Pålsson, Tim Persson, Gustav Dalemo
--- Lab group   : 9
-
 module Main where
 
 import ConsoleGUI
