@@ -13,7 +13,7 @@ Lab group   : 9
 module Shapes where
 
 import Data.List (transpose)
-import Data.Maybe (isNothing)
+import Data.Maybe (isNothing, isJust)
 import Test.QuickCheck
 
 -- * Shapes
@@ -152,7 +152,7 @@ moveX i (Shape (r:rs))
           recurMoveX = rows (moveX i (Shape rs))
 
 -- ** Alternative function for moveX
-moveX':: Int -> Shape -> Shape 
+moveX':: Int -> Shape -> Shape
 moveX' n s =  rotateShape(moveY n (tilt s))
   where
     tilt :: Shape -> Shape
@@ -164,7 +164,7 @@ moveY i (Shape r)
   | i > 0 = Shape (nothingRows ++ r)
   | otherwise = Shape (r ++ nothingRows)
     where
-      nothingRows = rows (emptyShape(abs i, length (head r)))
+      nothingRows = rows (emptyShape(length (head r), abs i))
 
 -- ** A9
 -- | padShape adds empty sqaure below and to the right of the shape
@@ -185,15 +185,30 @@ padShapeTo (x, y) s
 
 -- | Test if two shapes overlap
 overlaps :: Shape -> Shape -> Bool
-s1 `overlaps` s2 = error "A11 overlaps undefined"
+s1 `overlaps` s2 = or (zipWith rowsOverlap (rows s1) (rows s2))
+  where
+    rowsOverlap :: Row -> Row -> Bool
+    rowsOverlap r1 r2 = or [all Data.Maybe.isJust [e1,e2] | (e1,e2) <- zip r1 r2]
 
 -- ** B2
 -- | zipShapeWith, like 'zipWith' for lists
 zipShapeWith :: (Square -> Square -> Square) -> Shape -> Shape -> Shape
-zipShapeWith = error "A12 zipShapeWith undefined"
+zipShapeWith f s1 s2 = Shape ([zipWith f x y | (x,y) <- zip (rows s1) (rows s2)])
 
 -- ** B3
 -- | Combine two shapes. The two shapes should not overlap.
 -- The resulting shape will be big enough to fit both shapes.
 combine :: Shape -> Shape -> Shape
-s1 `combine` s2 = error "A13 zipShapeWith undefined"
+s1 `combine` s2 = zipShapeWith mergeSquares (padShapeTo combinedSize s1) (padShapeTo combinedSize s2)
+  where
+    mergeSquares :: Square -> Square -> Square
+    mergeSquares sq Nothing = sq
+    mergeSquares Nothing sq = sq
+    mergeSquares _ _ = error "Overlapping squares"
+
+    combinedSize :: (Int, Int)
+    combinedSize = (max x1 x2, max y1 y2)
+      where  
+        (x1, y1) = shapeSize s1
+        (x2, y2) = shapeSize s2
+

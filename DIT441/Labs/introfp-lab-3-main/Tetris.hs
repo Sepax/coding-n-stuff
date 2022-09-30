@@ -20,13 +20,13 @@ main :: IO ()
 main = runGame tetrisGame
 
 tetrisGame :: Game Tetris
-tetrisGame = Game 
+tetrisGame = Game
   { startGame     = startTetris
   , stepGame      = stepTetris
   , drawGame      = drawTetris
   , gameInfo      = defaultGameInfo prop_Tetris
   , tickDelay     = defaultDelay
-  , gameInvariant = prop_Tetris 
+  , gameInvariant = prop_Tetris
   }
 
 --------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ tetrisGame = Game
 type Pos   = (Int, Int)
 
 -- | The state of the game consists of three parts:
-data Tetris = Tetris 
+data Tetris = Tetris
   { piece  :: (Pos, Shape)  -- ^ The position and shape of the falling piece
   , well   :: Shape         -- ^ The well (the playing field), where the falling pieces pile up
   , shapes :: [Shape]       -- ^ An infinite supply of random shapes
@@ -63,16 +63,19 @@ place (v, s) = shiftShape v s
 
 -- | An invariant that startTetris and stepTetris should uphold
 prop_Tetris :: Tetris -> Bool
-prop_Tetris t = True -- incomplete !!!
+prop_Tetris t = prop_Shape (snd(piece t)) && shapeSize (well t) == wellSize
 
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
-addWalls s = s -- incomplete !!!
+addWalls = wallThenRotate . wallThenRotate . wallThenRotate . wallThenRotate
+  where
+    wallThenRotate :: Shape -> Shape
+    wallThenRotate s = rotateShape (Shape (replicate (fst $ shapeSize s) (Just Black) : rows s))
 
 -- | Visualize the current game state. This is what the user will see
 -- when playing the game.
 drawTetris :: Tetris -> Shape
-drawTetris (Tetris (v, p) w _) = w -- incomplete !!!
+drawTetris (Tetris (v, p) w _) = addWalls (combine w (place (v,p)))
 
 -- | The initial game state
 startTetris :: [Double] -> Tetris
@@ -84,4 +87,13 @@ startTetris rs = Tetris (startPosition, piece) well supply
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
-stepTetris action t = Just (0, t) -- incomplete !!!
+stepTetris Tick = tick {-
+stepTetris MoveLeft t = ...
+stepTetris MoveRigt t = ...
+... -}
+  where
+    move :: Pos -> Tetris -> Tetris
+    move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
+
+    tick :: Tetris -> Maybe (Int, Tetris)
+    tick t = Just (0,move (0,1) t)
