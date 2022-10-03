@@ -16,6 +16,7 @@ import ConsoleGUI
 -- import ThreepennyGUI  -- either use ConsoleGUI or ThreepennyGUI
 
 import Shapes
+import CoreSyn (valArgCount)
 
 --------------------------------------------------------------------------------
 -- * The code that puts all the piece together
@@ -39,7 +40,7 @@ type Pos   = (Int, Int)
 
 -- | The state of the game consists of three parts:
 
-data Tetris = Tetris 
+data Tetris = Tetris
   { piece  :: (Pos, Shape)  -- ^ The position and shape of the falling piece
   , well   :: Shape         -- ^ The well (the playing field), where the falling pieces pile up
   , shapes :: [Shape]       -- ^ An infinite supply of random shapes
@@ -67,7 +68,7 @@ place (v, s) = shiftShape v s
 
 -- | An invariant that startTetris and stepTetris should uphold
 prop_Tetris :: Tetris -> Bool
-prop_Tetris t = prop_Shape (snd(piece t)) && shapeSize (well t) == wellSize
+prop_Tetris t = prop_Shape (snd(piece t)) && shapeSize (well t)  == wellSize && not (collision t)
 
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
@@ -91,13 +92,33 @@ startTetris rs = Tetris (startPosition, piece) well supply
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
-stepTetris Tick = tick {-
-stepTetris MoveLeft t = ...
-stepTetris MoveRigt t = ...
-... -}
-  where
-    move :: Pos -> Tetris -> Tetris
-    move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
+stepTetris a t
+  | a == MoveDown = tick t
+  | a == MoveRight = Just (0, movePiece 1 t)
+  | a == MoveLeft = Just (0, movePiece (-1) t)
+  | otherwise = tick t
 
-    tick :: Tetris -> Maybe (Int, Tetris)
-    tick t = Just (0,move (0,1) t)
+move :: Pos -> Tetris -> Tetris
+move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
+
+tick :: Tetris -> Maybe (Int, Tetris)
+tick t
+  | collision newState = Just (0, t)
+  | otherwise = Just (0, newState)
+  where
+    newState = move (0,1) t
+
+collision :: Tetris -> Bool
+collision (Tetris (v,p) w s)
+  | fst v < 0 = True
+  | fst v + fst (shapeSize p) > wellWidth = True
+  | snd v + snd (shapeSize p) > wellHeight = True
+  | p `overlaps` w = True
+  | otherwise = False
+
+movePiece :: Int -> Tetris -> Tetris
+movePiece n t
+  | not (collision newState) = newState
+  | otherwise = t
+    where newState = move (n, 0) t
+
