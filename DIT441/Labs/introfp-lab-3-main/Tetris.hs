@@ -96,6 +96,7 @@ stepTetris a t
   | a == MoveDown = tick t
   | a == MoveRight = Just (0, movePiece 1 t)
   | a == MoveLeft = Just (0, movePiece (-1) t)
+  | a == Rotate = Just (0, rotatePiece t)
   | otherwise = tick t
 
 move :: Pos -> Tetris -> Tetris
@@ -124,3 +125,10 @@ movePiece n t
 
 rotate :: Tetris -> Tetris
 rotate (Tetris (v,p) w s) = Tetris (v,rotateShape p) w s
+
+rotatePiece :: Tetris -> Tetris
+rotatePiece t
+  | not (collision newState) = newState
+  | otherwise = t
+  where
+    newState = rotate t
