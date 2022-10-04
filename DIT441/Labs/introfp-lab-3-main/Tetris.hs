@@ -91,13 +91,29 @@ startTetris rs = Tetris (startPosition, piece) well supply
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
-stepTetris Tick = tick {-
-stepTetris MoveLeft t = ...
-stepTetris MoveRigt t = ...
-... -}
-  where
-    move :: Pos -> Tetris -> Tetris
-    move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
+stepTetris Tick = tick
+stepTetris MoveDown = tick
+stepTetris MoveLeft = \t -> Just (0,movePiece (-1) t)
+stepTetris MoveRight = \t -> Just (0,movePiece 1 t)
 
-    tick :: Tetris -> Maybe (Int, Tetris)
-    tick t = Just (0,move (0,1) t)
+move :: Pos -> Tetris -> Tetris
+move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
+
+tick :: Tetris -> Maybe (Int, Tetris)
+tick t
+  | collision t = Just (0,move (0,0) t)
+  | otherwise = Just (0,move (0,1) t)
+
+collision :: Tetris -> Bool
+collision (Tetris ((x,y), p) w _)
+  | x < 0 = True
+  | x + fst(shapeSize p) > wellWidth = True
+  | y + snd(shapeSize p) > wellHeight-1 = True
+  | place ((x,y),p) `overlaps` w = True
+  | otherwise = False
+
+movePiece :: Int -> Tetris -> Tetris
+movePiece n (Tetris ((x,y), p) w s) 
+  | collision (move (n,0) (Tetris ((x,y), p) w s)) = Tetris ((x,y), p) w s
+  | otherwise = move (n,0) (Tetris ((x,y), p) w s)
+
