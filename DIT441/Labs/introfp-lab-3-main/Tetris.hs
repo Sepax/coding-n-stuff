@@ -122,3 +122,5 @@ movePiece n t
   | otherwise = t
     where newState = move (n, 0) t
 
+rotate :: Tetris -> Tetris
+rotate (Tetris (v,p) w s) = Tetris (v,rotateShape p) w s
