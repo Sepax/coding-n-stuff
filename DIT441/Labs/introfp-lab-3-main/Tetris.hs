@@ -39,7 +39,7 @@ type Pos   = (Int, Int)
 
 -- | The state of the game consists of three parts:
 
-data Tetris = Tetris 
+data Tetris = Tetris
   { piece  :: (Pos, Shape)  -- ^ The position and shape of the falling piece
   , well   :: Shape         -- ^ The well (the playing field), where the falling pieces pile up
   , shapes :: [Shape]       -- ^ An infinite supply of random shapes
@@ -83,10 +83,10 @@ drawTetris (Tetris (v, p) w _) = addWalls (combine w (place (v,p)))
 
 -- | The initial game state
 startTetris :: [Double] -> Tetris
-startTetris rs = Tetris (startPosition, piece) well supply
+startTetris (x:xs) = Tetris (startPosition, piece) well supply
  where
   well         = emptyShape wellSize
-  piece:supply = repeat (allShapes !! 1) -- incomplete !!!
+  piece:supply = repeat (allShapes !! round (x * fromIntegral (length allShapes -1)))
 
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
@@ -95,25 +95,54 @@ stepTetris Tick = tick
 stepTetris MoveDown = tick
 stepTetris MoveLeft = \t -> Just (0,movePiece (-1) t)
 stepTetris MoveRight = \t -> Just (0,movePiece 1 t)
+stepTetris Rotate = \t -> Just (0, rotatePiece t)
 
 move :: Pos -> Tetris -> Tetris
 move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
 
 tick :: Tetris -> Maybe (Int, Tetris)
 tick t
-  | collision t = Just (0,move (0,0) t)
+  | collision $ tickedTetris t = dropNewPiece t
   | otherwise = Just (0,move (0,1) t)
+  where
+    tickedTetris t = move (0,1) t
 
 collision :: Tetris -> Bool
 collision (Tetris ((x,y), p) w _)
   | x < 0 = True
   | x + fst(shapeSize p) > wellWidth = True
-  | y + snd(shapeSize p) > wellHeight-1 = True
+  | y + snd(shapeSize p) > wellHeight = True
   | place ((x,y),p) `overlaps` w = True
   | otherwise = False
 
+collision' :: Tetris -> Bool
+collision' (Tetris (v, p) w _) = place (v,p) `overlaps` w
+
 movePiece :: Int -> Tetris -> Tetris
-movePiece n (Tetris ((x,y), p) w s) 
+movePiece n (Tetris ((x,y), p) w s)
   | collision (move (n,0) (Tetris ((x,y), p) w s)) = Tetris ((x,y), p) w s
   | otherwise = move (n,0) (Tetris ((x,y), p) w s)
+
+rotate :: Tetris -> Tetris
+rotate (Tetris ((x,y), p) w s) = Tetris ((x,y), rotateShape p) w s
+
+adjust :: Tetris -> Tetris
+adjust t@(Tetris ((x,y), p) w s)
+  | collision (rotate t) = move (-(snd (shapeSize p)-1),y) (rotate t)
+  | otherwise = rotate t
+
+rotatePiece :: Tetris -> Tetris
+rotatePiece t
+  | collision (rotate t) =  adjust t
+  | otherwise = rotate t
+
+dropNewPiece :: Tetris -> Maybe (Int, Tetris)
+dropNewPiece t@(Tetris ((x,y), p) w s)
+  | place ((x,y), p) `overlaps` w = error "Game Over"
+  | otherwise = Just (0, Tetris (startPosition, head s) (place ((x,y), p) `combine` w) (tail s))
+
+
+w = addWalls (emptyShape wellSize)
+w1 =  combine w (place ((5,18), allShapes !! 1))
+w2 = combine w1 (place ((5,15), allShapes !! 1))
 
