@@ -139,7 +139,7 @@ rotatePiece t
   | otherwise = rotate t
 
 dropNewPiece :: Tetris -> Maybe (Int, Tetris)
-dropNewPiece t@(Tetris (v, p) w supply)
+dropNewPiece (Tetris (v, p) w supply)
   | place (v, p) `overlaps` w = Nothing
   | otherwise = Just (n, Tetris (startPosition, head supply) s (tail supply))
   where
