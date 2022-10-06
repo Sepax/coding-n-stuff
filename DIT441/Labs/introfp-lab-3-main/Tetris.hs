@@ -83,10 +83,10 @@ drawTetris (Tetris (v, p) w _) = addWalls (combine w (place (v,p)))
 
 -- | The initial game state
 startTetris :: [Double] -> Tetris
-startTetris (x:xs) = Tetris (startPosition, piece) well supply
+startTetris (x:xs) = Tetris (startPosition, head $ supply (x:xs)) well (supply (x:xs))
  where
   well         = emptyShape wellSize
-  piece:supply = repeat (allShapes !! round (x * fromIntegral (length allShapes -1)))
+  supply (x:xs) = allShapes !! round (x * fromIntegral (length allShapes -1)) : supply xs
 
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
@@ -142,7 +142,9 @@ rotatePiece t
 dropNewPiece :: Tetris -> Maybe (Int, Tetris)
 dropNewPiece t@(Tetris ((x,y), p) w (piece:supply))
   | place ((x,y),p) `overlaps` w = error "Game Over"
-  | otherwise = Just (0, Tetris (startPosition, piece) (place ((x,y), p) `combine` w) supply)
+  | otherwise = Just (n, Tetris (startPosition, piece) (place ((x,y), p) `combine` s) supply)
+    where
+    (n,s) = clearLines w
 
 -------------
 a1 = allShapes !! 1
@@ -160,6 +162,10 @@ clearLines (Shape rows) = (rowsCleared, padShape (0,- rowsCleared) (Shape (delet
 
 deleteFullRows :: [Row] -> [Row]
 deleteFullRows [] = []
-deleteFullRows rs = map (filter (== Nothing)) rs
+deleteFullRows (r:rs)
+  | Nothing `elem` r = r : deleteFullRows rs
+  | otherwise = deleteFullRows rs
 
+deleteFullRows' :: [Row] -> [Row]
+deleteFullRows' = undefined
 
