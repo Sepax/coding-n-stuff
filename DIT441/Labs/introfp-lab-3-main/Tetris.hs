@@ -126,7 +126,7 @@ rotate :: Tetris -> Tetris
 rotate (Tetris (v,p) w s) = Tetris (v, rotateShape p) w s
 
 adjust :: Tetris -> Tetris
-adjust t@(Tetris ((x,y), p) w s)
+adjust t
   | collision (adjusted t) = move (-1,0) (adjusted t)
   | collision (rotate t) = adjusted t
   | otherwise = rotate t
