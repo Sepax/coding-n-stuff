@@ -83,12 +83,10 @@ drawTetris (Tetris (v, p) w _) = addWalls (combine w (place (v,p)))
 
 -- | The initial game state
 startTetris :: [Double] -> Tetris
-startTetris [] = error "No randomizer in startTetris function"
-startTetris (x:xs) = Tetris (startPosition, head $ supply (x:xs)) well (supply (x:xs))
- where
-  well = emptyShape wellSize
-  supply [] = error "No randomizer in startTetris function"
-  supply (x:xs) = allShapes !! round (x * fromIntegral (length allShapes -1)) : supply xs
+startTetris (d:ds) = Tetris (startPosition, head $ supply (d:ds)) well (supply ds)
+  where
+    well = emptyShape wellSize
+    supply (x:xs) = allShapes !! round (x * fromIntegral (length allShapes -1)) : supply xs
 
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
@@ -139,11 +137,11 @@ rotatePiece t
   | otherwise = rotate t
 
 dropNewPiece :: Tetris -> Maybe (Int, Tetris)
-dropNewPiece (Tetris (v, p) w supply)
-  | place (v, p) `overlaps` w = Nothing
-  | otherwise = Just (n, Tetris (startPosition, head supply) s (tail supply))
-  where
-    (n,s) = clearLines $ w `combine` place (v, p) 
+dropNewPiece t@(Tetris ((x,y), p) w (piece:supply))
+  | place ((x,y), p) `overlaps` w = Nothing
+  | otherwise = Just (n, Tetris (startPosition, piece) s supply)
+    where
+    (n,s) = clearLines $ w `combine` place ((x,y), p)
 
 clearLines :: Shape -> (Int, Shape)
 clearLines (Shape rows) = (rowsCleared, padShape (0,- rowsCleared) (Shape (deleteFullRows rows)))
