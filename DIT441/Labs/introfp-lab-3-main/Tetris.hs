@@ -84,10 +84,12 @@ drawTetris (Tetris (v, p) w _) = addWalls (combine w (place (v,p)))
 
 -- | The initial game state
 startTetris :: [Double] -> Tetris
-startTetris rs = Tetris (startPosition, piece) well supply
+startTetris [] = error "No randomizer in startTetris function"
+startTetris (x:xs) = Tetris (startPosition, head $ supply (x:xs)) well (supply (x:xs))
  where
-  well         = emptyShape wellSize
-  piece:supply = repeat (allShapes !! 1) -- incomplete !!!
+  well = emptyShape wellSize
+  supply [] = error "No randomizer in startTetris function"
+  supply (x:xs) = allShapes !! round (x * fromIntegral (length allShapes -1)) : supply xs
 
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
@@ -141,3 +143,7 @@ dropNewPiece (Tetris (v,p) w s)
     newState = Tetris newPiece newWell (drop 1 s)
     newPiece = (startPosition,head s)
     newWell = w `combine` place (v,p)
+
+
+
+
