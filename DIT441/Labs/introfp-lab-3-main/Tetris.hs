@@ -91,11 +91,11 @@ startTetris (x:xs) = Tetris (startPosition, head $ supply (x:xs)) well (supply (
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
-stepTetris Tick = tick
-stepTetris MoveDown = tick
-stepTetris MoveLeft = \t -> Just (0,movePiece (-1) t)
-stepTetris MoveRight = \t -> Just (0,movePiece 1 t)
-stepTetris Rotate = \t -> Just (0, rotatePiece t)
+stepTetris Tick t = tick t
+stepTetris MoveDown t = tick t
+stepTetris MoveLeft t = Just (0,movePiece (-1) t)
+stepTetris MoveRight t = Just (0,movePiece 1 t)
+stepTetris Rotate t = Just (0, rotatePiece t)
 
 move :: Pos -> Tetris -> Tetris
 move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s

@@ -202,7 +202,7 @@ s1 `combine` s2 = zipShapeWith mergeSqrs (padShapeTo combSize s1) (padShapeTo co
     mergeSqrs :: Square -> Square -> Square
     mergeSqrs sq1 Nothing = sq1
     mergeSqrs Nothing sq2 = sq2
-    mergeSqrs _ _ = error "error: Two non-empty squares"
+    mergeSqrs _ _ = Nothing
 
     combSize :: (Int,Int)
     combSize = (max x1 x2, max y1 y2)
