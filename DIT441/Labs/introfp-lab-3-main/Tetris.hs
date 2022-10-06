@@ -123,7 +123,8 @@ movePiece :: Int -> Tetris -> Tetris
 movePiece n t
   | collision newState = t
   | otherwise = newState
-    where newState = move (n, 0) t
+    where 
+      newState = move (n, 0) t
 
 rotate :: Tetris -> Tetris
 rotate (Tetris (v,p) w s) = Tetris (v,rotateShape p) w s
