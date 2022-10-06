@@ -72,7 +72,7 @@ prop_Tetris t = prop_Shape (snd(piece t)) && shapeSize (well t)  == wellSize && 
 
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
-addWalls = wallThenRotate . wallThenRotate . wallThenRotate . wallThenRotate
+addWalls s = last (take 5 $iterate wallThenRotate s)
   where
     wallThenRotate :: Shape -> Shape
     wallThenRotate s = rotateShape (Shape (replicate (fst $ shapeSize s) (Just Black) : rows s))
@@ -104,7 +104,7 @@ move pos (Tetris (v,p) w s) = Tetris (v `add` pos,p) w s
 
 tick :: Tetris -> Maybe (Int, Tetris)
 tick t
-  | collision newState = Just (0, t)
+  | collision newState = dropNewPiece t
   | otherwise = Just (0, newState)
   where
     newState = move (0,1) t
@@ -114,13 +114,13 @@ collision (Tetris (v,p) w s)
   | fst v < 0 = True
   | fst v + fst (shapeSize p) > wellWidth = True
   | snd v + snd (shapeSize p) > wellHeight = True
-  | p `overlaps` w = True
+  | place (v,p) `overlaps` w = True
   | otherwise = False
 
 movePiece :: Int -> Tetris -> Tetris
 movePiece n t
-  | not (collision newState) = newState
-  | otherwise = t
+  | collision newState = t
+  | otherwise = newState
     where newState = move (n, 0) t
 
 rotate :: Tetris -> Tetris
@@ -128,7 +128,16 @@ rotate (Tetris (v,p) w s) = Tetris (v,rotateShape p) w s
 
 rotatePiece :: Tetris -> Tetris
 rotatePiece t
-  | not (collision newState) = newState
-  | otherwise = t
+  | collision newState = t
+  | otherwise = newState
   where
     newState = rotate t
+
+dropNewPiece :: Tetris -> Maybe (Int, Tetris)
+dropNewPiece (Tetris (v,p) w s)
+  | w `overlaps` place newPiece = Nothing
+  | otherwise = Just (0, newState)
+  where
+    newState = Tetris newPiece newWell (drop 1 s)
+    newPiece = (startPosition,head s)
+    newWell = w `combine` place (v,p)
