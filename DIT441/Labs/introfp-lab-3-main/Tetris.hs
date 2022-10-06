@@ -95,7 +95,6 @@ startTetris (x:xs) = Tetris (startPosition, head $ supply (x:xs)) well (supply (
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
 stepTetris a t = case a of 
-  MoveDown  -> tick t
   MoveRight -> Just (0, movePiece 1 t)
   MoveLeft  -> Just (0, movePiece (-1) t)
   Rotate    -> Just (0, rotatePiece t)
