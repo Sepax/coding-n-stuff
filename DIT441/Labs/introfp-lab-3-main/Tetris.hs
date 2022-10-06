@@ -141,10 +141,10 @@ rotatePiece t
 
 dropNewPiece :: Tetris -> Maybe (Int, Tetris)
 dropNewPiece t@(Tetris ((x,y), p) w (piece:supply))
-  | place ((x,y),p) `overlaps` w = error "Game Over"
-  | otherwise = Just (n, Tetris (startPosition, piece) (place ((x,y), p) `combine` s) supply)
+  | place ((x,y), p) `overlaps` w = Nothing
+  | otherwise = Just (n, Tetris (startPosition, piece) s supply)
     where
-    (n,s) = clearLines w
+    (n,s) = clearLines $ w `combine` place ((x,y), p)
 
 -------------
 a1 = allShapes !! 1
@@ -157,15 +157,12 @@ w2 = combine w1 (place ((5,15), a1))
 clearLines :: Shape -> (Int, Shape)
 clearLines (Shape rows) = (rowsCleared, padShape (0,- rowsCleared) (Shape (deleteFullRows rows)))
   where
-    rowsCleared = foldr ((-) . length) 0 [rows, deleteFullRows rows]
+    rowsCleared = length rows - length (deleteFullRows rows)
+  --  rowsCleared' = foldr ((-) . length) 0 [rows, deleteFullRows rows]
 
 
 deleteFullRows :: [Row] -> [Row]
-deleteFullRows [] = []
-deleteFullRows (r:rs)
-  | Nothing `elem` r = r : deleteFullRows rs
-  | otherwise = deleteFullRows rs
+deleteFullRows = filter (not . \r -> Nothing `notElem` r)
 
-deleteFullRows' :: [Row] -> [Row]
-deleteFullRows' = undefined
+
 
