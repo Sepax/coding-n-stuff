@@ -132,7 +132,7 @@ adjust t@(Tetris ((x,y), p) w s)
   | collision (rotate t) = adjusted t
   | otherwise = rotate t
   where
-    adjusted t = move (-1,0) (rotate t)
+    adjusted t = move (-1,-1) (rotate t)
 
 rotatePiece :: Tetris -> Tetris
 rotatePiece t
