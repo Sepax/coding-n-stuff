@@ -128,8 +128,11 @@ rotate (Tetris ((x,y), p) w s) = Tetris ((x,y), rotateShape p) w s
 
 adjust :: Tetris -> Tetris
 adjust t@(Tetris ((x,y), p) w s)
-  | collision (rotate t) = move (-(snd (shapeSize p)-1),y) (rotate t)
+  | collision (adjusted t) = move (-1,0) (adjusted t)
+  | collision (rotate t) = adjusted t
   | otherwise = rotate t
+  where
+    adjusted t = move (-1,0) (rotate t)
 
 rotatePiece :: Tetris -> Tetris
 rotatePiece t
@@ -137,12 +140,26 @@ rotatePiece t
   | otherwise = rotate t
 
 dropNewPiece :: Tetris -> Maybe (Int, Tetris)
-dropNewPiece t@(Tetris ((x,y), p) w s)
-  | place ((x,y), p) `overlaps` w = error "Game Over"
-  | otherwise = Just (0, Tetris (startPosition, head s) (place ((x,y), p) `combine` w) (tail s))
+dropNewPiece t@(Tetris ((x,y), p) w (piece:supply))
+  | place ((x,y),p) `overlaps` w = error "Game Over"
+  | otherwise = Just (0, Tetris (startPosition, piece) (place ((x,y), p) `combine` w) supply)
 
-
+-------------
+a1 = allShapes !! 1
+a2 = allShapes !! 2
 w = addWalls (emptyShape wellSize)
-w1 =  combine w (place ((5,18), allShapes !! 1))
-w2 = combine w1 (place ((5,15), allShapes !! 1))
+w1 =  combine w (place ((5,18), a1))
+w2 = combine w1 (place ((5,15), a1))
+-------------
+
+clearLines :: Shape -> (Int, Shape)
+clearLines (Shape rows) = (rowsCleared, padShape (0,- rowsCleared) (Shape (deleteFullRows rows)))
+  where
+    rowsCleared = foldr ((-) . length) 0 [rows, deleteFullRows rows]
+
+
+deleteFullRows :: [Row] -> [Row]
+deleteFullRows [] = []
+deleteFullRows rs = map (filter (== Nothing)) rs
+
 
