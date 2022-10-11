@@ -6,6 +6,8 @@ License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
 -}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use <$>" #-}
 
 module Simplify where
 
@@ -13,7 +15,7 @@ import Poly
 import Test.QuickCheck
 
 -- Use the following simple data type for binary operators
-data BinOp = AddOp | MulOp deriving Eq
+data BinOp = AddOp | MulOp deriving (Eq, Show)
 
 --------------------------------------------------------------------------------
 -- * A1
@@ -24,14 +26,24 @@ data BinOp = AddOp | MulOp deriving Eq
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Num Int | BinOp Expr Expr
+data Expr = Num Int | Op BinOp Expr Expr | Pow Expr Int
 
 --------------------------------------------------------------------------------
 -- * A2
 -- Define the data type invariant that checks that exponents are never negative
 prop_Expr :: Expr -> Bool
-prop_Expr = undefined
+prop_Expr expr = case expr of
+  Pow _ n -> n >= 0
+  _       -> True
 
+
+e1 = Num 5
+e2 = Op MulOp (Num 2) (Num 3)
+e3 = Op MulOp (Num 2) (Num (-3))
+e4 = Op AddOp (Num 2) (Num 3)
+e5 = Op AddOp (Num 2) (Num (-3))
+e6 = Pow (Num 2) 3
+e7 = Pow (Num 2) (-3)
 
 --------------------------------------------------------------------------------
 -- * A3
@@ -39,8 +51,15 @@ prop_Expr = undefined
 -- lecture). You can use Haskell notation for powers: x^2. You should show x^1 
 -- as just x. 
 
--- instance Show Expr where
---   show = undefined
+instance Show Expr where
+  show = showExpr
+    where
+      showExpr :: Expr -> String
+      showExpr expr = case expr of
+        Num n               -> if n < 0 then "(" ++ show n ++ ")" else do show n
+        Op AddOp expr expr' -> showExpr expr ++ "+" ++ showExpr expr' 
+        Op MulOp expr expr' -> showExpr expr ++ "*" ++ showExpr expr' 
+        Pow expr n          -> showExpr expr ++ "^" ++ "(" ++ show n ++ ")"
 
 --------------------------------------------------------------------------------
 -- * A4
@@ -54,7 +73,29 @@ prop_Expr = undefined
 -- could use to find a smaller counterexample for failing tests.
 
 instance Arbitrary Expr
-  where arbitrary = undefined
+  where 
+    arbitrary = sized genExpr
+     
+genExpr :: Int -> Gen Expr
+genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
+  where
+    genOp :: Gen Expr
+    genOp = let n = size `div` 2 in do
+      o <- elements [AddOp, MulOp]
+      x <- genExpr n
+      y <- genExpr n
+      return (Op o x y)
+
+    genNum :: Gen Expr
+    genNum = do
+      n <- choose (0, 100)
+      return (Num n)
+
+    genPow :: Gen Expr
+    genPow = let n = size `div` 2 in do
+      ex <- genExpr n
+      n <- choose (0, 100)
+      return(Pow ex n)
 
 --------------------------------------------------------------------------------
 -- * A5
