@@ -24,13 +24,29 @@ data BinOp = AddOp | MulOp deriving Eq
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Expr -- change this!
+data Expr
+  = Num Int |Op BinOp Expr Expr| Pow Expr Int
 
+-- Test Expr
+a :: Expr
+a = Num (-10)
+
+a1 :: Expr
+a1 = Num 2
+
+testMul :: Expr
+testMul = Op MulOp a a1
+
+testExp :: Expr
+testExp = Pow a (-1)
 --------------------------------------------------------------------------------
 -- * A2
 -- Define the data type invariant that checks that exponents are never negative
 prop_Expr :: Expr -> Bool
-prop_Expr = undefined
+prop_Expr expr  = case expr of
+  Pow _ n   -> n >= 0
+  _         -> True
+
 
 
 --------------------------------------------------------------------------------
