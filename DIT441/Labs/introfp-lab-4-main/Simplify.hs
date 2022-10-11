@@ -12,6 +12,12 @@ module Simplify where
 import Poly
 import Test.QuickCheck
 
+-- Test Variables
+expr1 = Num 5
+expr2 = Op AddOp (Num 6) (Num 8)
+expr3 = Op MulOp (Num 6) (Num 2)
+expr4 = Pwr (Num 8) 2
+
 -- Use the following simple data type for binary operators
 data BinOp = AddOp | MulOp deriving Eq
 
@@ -24,16 +30,15 @@ data BinOp = AddOp | MulOp deriving Eq
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Num Int | Operation BinOp Expr Expr | Power Expr Int
+data Expr = Num Int | Op BinOp Expr Expr | Pwr Expr Int
 
 --------------------------------------------------------------------------------
 -- * A2
 -- Define the data type invariant that checks that exponents are never negative
 prop_Expr :: Expr -> Bool
 prop_Expr expr = case expr of
-  Power _ n -> n >= 0
+  Pwr _ n -> n >= 0
   _ -> True
-
 
 --------------------------------------------------------------------------------
 -- * A3
@@ -41,8 +46,12 @@ prop_Expr expr = case expr of
 -- lecture). You can use Haskell notation for powers: x^2. You should show x^1 
 -- as just x. 
 
--- instance Show Expr where
---   show = undefined
+instance Show Expr where
+  show (Num n)          = show n
+  show (Op AddOp e1 e2) = show e1 ++ " + " ++ show e2
+  show (Op MulOp e1 e2) = show e1 ++ " * " ++ show e2
+  show (Pwr e n)        = show e ++ "^" ++ show n
+
 
 --------------------------------------------------------------------------------
 -- * A4
