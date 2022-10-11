@@ -24,7 +24,7 @@ data BinOp = AddOp | MulOp deriving Eq
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Expr -- change this!
+data Expr = Num Int | BinOp Expr Expr
 
 --------------------------------------------------------------------------------
 -- * A2
