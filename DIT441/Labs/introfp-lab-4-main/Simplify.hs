@@ -50,7 +50,10 @@ e4 = Op AddOp (Num 2) (Num 3)
 e5 = Op AddOp (Num 2) (Num (-3))
 e6 = Pow (Num 2) 3
 e7 = Pow (Num 2) (-3) -- This fails the invariant
-e8 = Op MulOp x (Num 4)
+-- Expressions using variable x
+ex1 :: Expr
+ex1 = Op AddOp (Op AddOp (Pow x 2) x) (Num 5) 
+
 
 
 --------------------------------------------------------------------------------
@@ -65,9 +68,9 @@ instance Show Expr where
       showExpr :: Expr -> String
       showExpr expr = case expr of
         Num n               -> if n < 0 then "(" ++ show n ++ ")" else do show n
-        Op AddOp expr expr' -> showExpr expr ++ "+" ++ showExpr expr' 
-        Op MulOp expr expr' -> showExpr expr ++ "*" ++ showExpr expr' 
-        Pow expr n          -> if n == 1 then showExpr expr else showExpr expr ++ "^" ++ "(" ++ show n ++ ")"
+        Op AddOp expr expr' -> showExpr expr ++ " + " ++ showExpr expr' 
+        Op MulOp expr expr' -> showExpr expr ++ " * " ++ showExpr expr' 
+        Pow expr n          -> if n == 1 then showExpr expr else showExpr expr ++ "^" ++ show n
         Var name            -> name
 
 --------------------------------------------------------------------------------
@@ -126,13 +129,14 @@ eval v expr = case expr of
 -- by solving the smaller problems and combining them in the right way. 
 
 exprToPoly :: Expr -> Poly
-exprToPoly = undefined
+exprToPoly (Num n) = fromList [n]
+exprToPoly Op AddOp e e' = fromList []
 
 -- Define (and check) @prop_exprToPoly@, which checks that evaluating the
 -- polynomial you get from @exprToPoly@ gives the same answer as evaluating
 -- the expression.
-
-prop_exprToPoly = undefined
+prop_exprToPoly :: Int -> Expr -> Bool
+prop_exprToPoly n e = eval n e == evalPoly n (exprToPoly e) 
 
 --------------------------------------------------------------------------------
 -- * A7
