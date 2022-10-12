@@ -26,7 +26,9 @@ data BinOp = AddOp | MulOp deriving (Eq, Show)
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Num Int | Op BinOp Expr Expr | Pow Expr Int
+type Name = String
+
+data Expr = Num Int | Op BinOp Expr Expr | Pow Expr Int | Var Name
 
 --------------------------------------------------------------------------------
 -- * A2
@@ -37,13 +39,19 @@ prop_Expr expr = case expr of
   _       -> True
 
 
+x :: Expr
+x = Var "x"
+
+e1,e2,e3,e4,e5,e6,e7 :: Expr
 e1 = Num 5
 e2 = Op MulOp (Num 2) (Num 3)
 e3 = Op MulOp (Num 2) (Num (-3))
 e4 = Op AddOp (Num 2) (Num 3)
 e5 = Op AddOp (Num 2) (Num (-3))
 e6 = Pow (Num 2) 3
-e7 = Pow (Num 2) (-3)
+e7 = Pow (Num 2) (-3) -- This fails the invariant
+e8 = Op MulOp x (Num 4)
+
 
 --------------------------------------------------------------------------------
 -- * A3
@@ -60,6 +68,7 @@ instance Show Expr where
         Op AddOp expr expr' -> showExpr expr ++ "+" ++ showExpr expr' 
         Op MulOp expr expr' -> showExpr expr ++ "*" ++ showExpr expr' 
         Pow expr n          -> if n == 1 then showExpr expr else showExpr expr ++ "^" ++ "(" ++ show n ++ ")"
+        Var name            -> name
 
 --------------------------------------------------------------------------------
 -- * A4
@@ -103,11 +112,12 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
 -- evaluates it.
 
 eval :: Int -> Expr -> Int
-eval x expr = case expr of
-  Num x -> x
-  Op AddOp expr expr' -> eval x expr + eval x expr'
-  Op MulOp expr expr' -> eval x expr * eval x expr'
-  Pow expr x -> eval x expr^x
+eval v expr = case expr of
+  Num v -> v
+  Op AddOp expr expr' -> eval v expr + eval v expr'
+  Op MulOp expr expr' -> eval v expr * eval v expr'
+  Pow expr v -> eval v expr^v
+  Var name -> v
 
 --------------------------------------------------------------------------------
 -- * A6
