@@ -59,7 +59,7 @@ instance Show Expr where
         Num n               -> if n < 0 then "(" ++ show n ++ ")" else do show n
         Op AddOp expr expr' -> showExpr expr ++ "+" ++ showExpr expr' 
         Op MulOp expr expr' -> showExpr expr ++ "*" ++ showExpr expr' 
-        Pow expr n          -> showExpr expr ++ "^" ++ "(" ++ show n ++ ")"
+        Pow expr n          -> if n == 1 then showExpr expr else showExpr expr ++ "^" ++ "(" ++ show n ++ ")"
 
 --------------------------------------------------------------------------------
 -- * A4
@@ -103,7 +103,11 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
 -- evaluates it.
 
 eval :: Int -> Expr -> Int
-eval = undefined
+eval x expr = case expr of
+  Num x -> x
+  Op AddOp expr expr' -> eval x expr + eval x expr'
+  Op MulOp expr expr' -> eval x expr * eval x expr'
+  Pow expr x -> eval x expr^x
 
 --------------------------------------------------------------------------------
 -- * A6
