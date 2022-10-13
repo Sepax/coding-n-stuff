@@ -66,10 +66,13 @@ instance Show Expr where
     where
       showExpr :: Expr -> String
       showExpr expr = case expr of
-        Num n               -> if n < 0 then "(" ++ show n ++ ")" else do show n
+        Num n               -> if n < 0 then "(" ++ show n ++ ")" else show n
         Op AddOp expr expr' -> showExpr expr ++ " + " ++ showExpr expr' 
-        Op MulOp expr expr' -> showExpr expr ++ " * " ++ showExpr expr' 
+        Op MulOp expr expr' -> showFactor expr ++ " * " ++ showFactor expr' 
         Pow n               -> if n == 1 then "x" else "x^" ++ show n
+        where
+          showFactor e@(Op AddOp x y) = "(" ++ showExpr e ++ ")"
+          showFactor e           = showExpr e
 
 --------------------------------------------------------------------------------
 -- * A4
@@ -128,7 +131,12 @@ eval v expr = case expr of
 -- by solving the smaller problems and combining them in the right way. 
 
 exprToPoly :: Expr -> Poly
-exprToPoly (Pow n) = 1:replicate n 0
+exprToPoly expr = case expr of
+  (Num n) -> fromList [n]
+  (Pow n) -> fromList (1:replicate n 0)
+  (Op AddOp e e') -> exprToPoly e + exprToPoly e'
+  (Op MulOp e e') -> exprToPoly e * exprToPoly e'
+
 
 -- Define (and check) @prop_exprToPoly@, which checks that evaluating the
 -- polynomial you get from @exprToPoly@ gives the same answer as evaluating
@@ -141,8 +149,38 @@ prop_exprToPoly n e = eval n e == evalPoly n (exprToPoly e)
 -- * A7
 -- Now define the function going in the other direction.
 
+-- Example Poly
+p1 = fromList [1,1,0,0]
+
 polyToExpr :: Poly -> Expr
-polyToExpr = undefined
+polyToExpr = listToExpr . toList
+  where
+    listToExpr :: [Int] -> Expr
+    listToExpr [] = Num 0
+    listToExpr l@(x:xs)
+      | x == 0 = listToExpr xs
+      | x == 1 = Op AddOp (Pow (length l-1)) (listToExpr xs)
+      | otherwise = Op AddOp (Op MulOp (Num x) (Pow (length l-1))) (listToExpr xs)
+
+polyToExpr' :: Poly -> Expr
+polyToExpr' p
+  | null l = Num 0
+  | x == 0 = polyToExpr' rest
+  | x == 1 = Op AddOp (Pow (length l-1)) (polyToExpr' rest)
+  | otherwise = Op AddOp (Op MulOp (Num x) (Pow (length l-1))) (polyToExpr' rest)
+    where l@(x:xs) = toList p
+          rest = fromList xs
+
+polyToExpr'' :: Poly -> Expr
+polyToExpr'' p = case x:xs of
+  []     -> Num 0
+  (0:xs) -> polyToExpr'' rest
+  (1:xs) -> Op AddOp (Pow (length (x:xs)-1)) (polyToExpr'' rest)
+  _      -> Op AddOp (Op MulOp (Num x) (Pow (length (x:xs)-1))) (polyToExpr'' rest)
+  where
+    x:xs = toList p
+    rest = fromList xs
+
 
 -- Write (and check) a quickCheck property for this function similar to
 -- question 6. 
