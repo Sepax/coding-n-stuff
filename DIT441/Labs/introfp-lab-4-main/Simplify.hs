@@ -193,7 +193,6 @@ polyToExpr' p
  
 
 
-
 -- Write (and check) a quickCheck property for this function similar to
 -- question 6. 
 prop_polyToExpr :: Int -> Poly -> Bool
@@ -221,7 +220,7 @@ nojunkExpr :: Expr
 nojunkExpr = Num 1
 
 prop_noJunk :: Expr -> Bool
-prop_noJunk = undefined
+prop_noJunk 
 
 --------------------------------------------------------------------------------
 -- * A10
