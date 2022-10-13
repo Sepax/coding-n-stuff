@@ -26,7 +26,9 @@ data BinOp = AddOp | MulOp deriving (Eq, Show)
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Num Int | Op BinOp Expr Expr | Pow Expr Int | Var Name
+data Expr = Num Int | Op BinOp Expr Expr | Pow Int
+
+-- x^2 + 1 -- Op AddOp (Pow 2) (Num 1)
 
 type Name = String
 
@@ -35,12 +37,10 @@ type Name = String
 -- Define the data type invariant that checks that exponents are never negative
 prop_Expr :: Expr -> Bool
 prop_Expr expr = case expr of
-  Pow _ n -> n >= 0
-  _       -> True
+  Pow n -> n >= 0
+  _     -> True
 
 
-x :: Expr
-x = Var "x"
 
 e1,e2,e3,e4,e5,e6,e7 :: Expr
 e1 = Num 5
@@ -48,11 +48,9 @@ e2 = Op MulOp (Num 2) (Num 3)
 e3 = Op MulOp (Num 2) (Num (-3))
 e4 = Op AddOp (Num 2) (Num 3)
 e5 = Op AddOp (Num 2) (Num (-3))
-e6 = Pow (Num 2) 3
-e7 = Pow (Num 2) (-3) -- This fails the invariant
--- Expressions using variable x
-ex1 :: Expr
-ex1 = Op AddOp (Op MulOp (Pow x 2) x) (Num 5) 
+e6 = Pow 3
+e7 = Pow (-3) -- This fails the invariant
+
 
 
 
@@ -70,8 +68,7 @@ instance Show Expr where
         Num n               -> if n < 0 then "(" ++ show n ++ ")" else do show n
         Op AddOp expr expr' -> showExpr expr ++ " + " ++ showExpr expr' 
         Op MulOp expr expr' -> showExpr expr ++ " * " ++ showExpr expr' 
-        Pow expr n          -> if n == 1 then showExpr expr else showExpr expr ++ "^" ++ show n
-        Var name            -> name
+        Pow n               -> if n == 1 then "x" else "x^" ++ show n
 
 --------------------------------------------------------------------------------
 -- * A4
@@ -89,11 +86,11 @@ instance Arbitrary Expr
     arbitrary = sized genExpr
      
 genExpr :: Int -> Gen Expr
-genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow), (size, genVar)]
+genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
   where
     genNum :: Gen Expr
     genNum = do
-      n <- choose (0, 100)
+      n <- choose (0, 5)
       return (Num n)
 
     genOp :: Gen Expr
@@ -106,11 +103,9 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow), (size, gen
     genPow :: Gen Expr
     genPow = let n = size `div` 2 in do
       ex <- genExpr n
-      n <- choose (0, 100)
-      return(Pow ex n)
-    
-    genVar :: Gen Expr
-    genVar = do return x
+      n <- choose (1, 5)
+      return(Pow n)
+
 
 --------------------------------------------------------------------------------
 -- * A5
@@ -119,11 +114,10 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow), (size, gen
 
 eval :: Int -> Expr -> Int
 eval v expr = case expr of
-  Num n -> n
+  Num n         -> n
   Op AddOp e e' -> eval v e + eval v e'
   Op MulOp e e' -> eval v e * eval v e'
-  Pow e n -> eval v e^n
-  Var name -> v
+  Pow n         -> v^n
 
 
 --------------------------------------------------------------------------------
@@ -134,7 +128,7 @@ eval v expr = case expr of
 
 exprToPoly :: Expr -> Poly
 exprToPoly (Num n) = fromList [n]
-exprToPoly (Op AddOp e e') = undefined -- fromList [Op AddOp e e']
+exprToPoly (Op AddOp e e') = fromList[exprToPoly e ++ exprToPoly e'
 
 -- Define (and check) @prop_exprToPoly@, which checks that evaluating the
 -- polynomial you get from @exprToPoly@ gives the same answer as evaluating
