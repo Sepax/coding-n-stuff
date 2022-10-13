@@ -15,6 +15,7 @@ import Poly
 import Test.QuickCheck
 
 -- Use the following simple data type for binary operators
+
 data BinOp = AddOp | MulOp deriving (Eq, Show)
 
 --------------------------------------------------------------------------------
@@ -26,63 +27,32 @@ data BinOp = AddOp | MulOp deriving (Eq, Show)
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Num Int | Op BinOp Expr Expr | Pow Int
-
--- x^2 + 1 -- Op AddOp (Pow 2) (Num 1)
-
-type Name = String
+data Expr = Num Int | Op BinOp Expr Expr | Pwr Int | Empty deriving Eq
 
 --------------------------------------------------------------------------------
 -- * A2
 -- Define the data type invariant that checks that exponents are never negative
+
 prop_Expr :: Expr -> Bool
 prop_Expr expr = case expr of
-  Pow n -> n >= 0
+  Pwr n -> n >= 0
   _     -> True
-
-
-
-e1,e2,e3,e4,e5,e6,e7,e8 :: Expr
-e1 = Num 5
-e2 = Op MulOp (Num 2) (Num 3)
-e3 = Op MulOp (Num 2) (Num (-3))
-e4 = Op AddOp (Num 2) (Num 3)
-e5 = Op AddOp (Num 2) (Num (-3))
-e6 = Pow 3
-e7 = Pow (-3) -- This fails the invariant
-e8 = Op MulOp (Pow 3) (Op AddOp (Pow 2) (Pow 1))
-
-
-
 
 --------------------------------------------------------------------------------
 -- * A3
 -- Make 'Expr' an instance of 'Show' (along the lines of the example in the 
--- lecture). You can use Haskell notation for powers: x^2. You should show x^1 
+-- lecture). You can use Haskell notation for Pwrers: x^2. You should show x^1 
 -- as just x. 
-
-{- instance Show Expr where
-  show = showExpr
-    where
-      showExpr :: Expr -> String
-      showExpr expr = case expr of
-        Num n               -> if n < 0 then "(" ++ show n ++ ")" else show n
-        Op AddOp expr expr' -> showExpr expr ++ " + " ++ showExpr expr' 
-        Op MulOp expr expr' -> showFactor expr ++ " * " ++ showFactor expr' 
-        Pow n               -> if n == 1 then "x" else "x^" ++ show n
-        where
-          showFactor e@(Op AddOp x y) = "(" ++ showExpr e ++ ")"
-          showFactor e           = showExpr e -}
- 
 instance Show Expr where
   show = showExpr
     where
       showExpr :: Expr -> String
       showExpr expr = case expr of
         Num n                 -> if n < 0 then "(" ++ show n ++ ")" else show n
+        Op AddOp expr Empty   -> showExpr expr
         Op AddOp expr expr'   -> showExpr expr ++ " + " ++ showExpr expr' 
         Op MulOp expr expr'   -> showFactor expr ++ " * " ++ showFactor expr' 
-        Pow n                 -> if n == 1 then "x" else "x^" ++ show n
+        Pwr n                 -> if n == 1 then "x" else "x^" ++ show n
         where
           showFactor e@(Op AddOp x y) = "(" ++ showExpr e ++ ")"
           showFactor e           = showExpr e  
@@ -104,7 +74,7 @@ instance Arbitrary Expr
     arbitrary = sized genExpr
      
 genExpr :: Int -> Gen Expr
-genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
+genExpr size = frequency [(1, genNum), (size, genOp), (size, genPwr)]
   where
     genNum :: Gen Expr
     genNum = do
@@ -118,12 +88,11 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
       y <- genExpr n
       return (Op o x y)
 
-    genPow :: Gen Expr
-    genPow = let n = size `div` 2 in do
+    genPwr :: Gen Expr
+    genPwr = let n = size `div` 2 in do
       ex <- genExpr n
-      n <- choose (1, 5)
-      return(Pow n)
-
+      n <- choose (0, 5)
+      return(Pwr n)
 
 --------------------------------------------------------------------------------
 -- * A5
@@ -135,8 +104,8 @@ eval v expr = case expr of
   Num n         -> n
   Op AddOp e e' -> eval v e + eval v e'
   Op MulOp e e' -> eval v e * eval v e'
-  Pow n         -> v^n
-
+  Pwr n         -> v^n
+  Empty         -> 0
 
 --------------------------------------------------------------------------------
 -- * A6
@@ -146,52 +115,34 @@ eval v expr = case expr of
 
 exprToPoly :: Expr -> Poly
 exprToPoly expr = case expr of
+  Empty   -> fromList []
   (Num n) -> fromList [n]
-  (Pow n) -> fromList (1:replicate n 0)
+  (Pwr n) -> fromList (1:replicate n 0)
   (Op AddOp e e') -> exprToPoly e + exprToPoly e'
   (Op MulOp e e') -> exprToPoly e * exprToPoly e'
-
 
 -- Define (and check) @prop_exprToPoly@, which checks that evaluating the
 -- polynomial you get from @exprToPoly@ gives the same answer as evaluating
 -- the expression.
+
 prop_exprToPoly :: Int -> Expr -> Bool
 prop_exprToPoly n e = eval n e == evalPoly n (exprToPoly e) 
-
 
 --------------------------------------------------------------------------------
 -- * A7
 -- Now define the function going in the other direction.
 
--- Example Poly
-p1 = fromList [1,0,0]
-
-
 polyToExpr :: Poly -> Expr
-polyToExpr p
-  | p == 0 = Num 0
-  | x == 0 && (x:xs) /= [] = polyToExpr rest
-  | x == 1 && (x:xs) /= [] = Op AddOp pwr (polyToExpr rest)
-  | (x:xs) /= [] = Op AddOp (Op MulOp (Num x) pwr) (polyToExpr rest)
-  | otherwise = Op MulOp (Num x) pwr
-    where l@(x:xs) = toList p
-          rest = fromList xs
-          pwr = Pow (length l-1)
-
-
-polyToExpr' :: Poly -> Expr
-polyToExpr' p
-  | p == 0 = Num 0
-  | x == 0 = rest
-  | x == 1 = Op AddOp pwr rest
-  | otherwise = case xs of
-      [] -> Num x
-      _  -> Op AddOp (Op MulOp (Num x) pwr) rest
-  where l@(x:xs) = toList p
-        rest = polyToExpr' (fromList xs)
-        pwr = Pow (length l-1)
- 
-
+polyToExpr = listToExpr . toList 
+  where
+    listToExpr :: [Int] -> Expr
+    listToExpr [a]
+      | a == 0 = Empty
+      | otherwise = Num a     
+    listToExpr l@(x:xs)
+      | x == 0    = listToExpr xs
+      | x == 1    = Op AddOp (Pwr (length l-1)) (listToExpr xs)
+      | otherwise = Op AddOp (Op MulOp (Num x) (Pwr (length l-1))) (listToExpr xs)
 
 -- Write (and check) a quickCheck property for this function similar to
 -- question 6. 
@@ -211,16 +162,14 @@ simplify = polyToExpr . exprToPoly
 -- Write a quickCheck property that checks that a simplified expression does not 
 -- contain any "junk", where junk is defined to be multiplication by one or 
 -- zero, addition of zero, addition or multiplication of numbers, or x to the
--- power of zero. (You may need to fix A7)
-
-junkExpr :: Expr
-junkExpr = Op AddOp (Num 1) (Num 0)
-
-nojunkExpr :: Expr
-nojunkExpr = Num 1
+-- Pwrer of zero. (You may need to fix A7)
 
 prop_noJunk :: Expr -> Bool
-prop_noJunk 
+prop_noJunk expr = case expr of
+  Op MulOp expr expr' -> Op MulOp expr expr' `notElem` [expr, expr']
+  Num 0               -> False
+  Pwr 0               -> False
+  _                   -> True
 
 --------------------------------------------------------------------------------
 -- * A10
@@ -234,10 +183,14 @@ diffFile :: FilePath
 diffFile = "difficulty.txt"
 
 readDifficulty :: IO Difficulty
-readDifficulty = undefined
-
+readDifficulty = do 
+  txt <- readFile diffFile
+  return (read txt)
+  
 writeDifficulty :: Difficulty -> IO ()
-writeDifficulty = undefined
+writeDifficulty diff = do
+  if diff <= 0 then writeFile diffFile "1"
+  else writeFile diffFile (show diff)
 
 --------------------------------------------------------------------------------
 -- * A11
@@ -248,6 +201,37 @@ writeDifficulty = undefined
 -- the difficulty by one. Then play again.
 
 play :: IO ()
-play = undefined
+play = do
+    putStrLn "Welcome to game"
+    quiz
 
+quiz :: IO ()
+quiz = do
+  d    <- readDifficulty
+  expr' <- generate (genExpr d)
+  let expr = simplify expr'
+  e    <- generate (choose (1,10))
+  putStr $ "Solve this with x = " ++ show e ++ "\n"++ show expr ++ "\n\n> "
+  n    <- readLn
+  
+  if eval e expr == n
+    then quizWin
+    else quizFail  
+  return ()
+  where
+    quizFail = do
+      putStrLn "Oh no, nice try!"
+      d    <- readDifficulty
+      writeDifficulty (subtract 1 d)
+      quiz
+    quizWin = do
+      putStrLn "Good job! Try a harder one!"
+      d    <- readDifficulty
+      writeDifficulty (d+1)
+      quiz
+
+
+
+
+ 
 --------------------------------------------------------------------------------
