@@ -13,7 +13,6 @@ import Poly
 import Test.QuickCheck
 
 -- Use the following simple data type for binary operators
-
 --------------------------------------------------------------------------------
 -- * A1
 -- Define a data type 'Expr' which represents three kinds of expression:
@@ -34,14 +33,16 @@ data BinOp = AddOp | MulOp deriving (Eq, Show)
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Num Int | Op BinOp Expr Expr | Pow Expr Int
+
+data Expr = Num Int | Op BinOp Expr Expr | Pow Int
+
 
 --------------------------------------------------------------------------------
 -- * A2
 -- Define the data type invariant that checks that exponents are never negative
 prop_Expr :: Expr -> Bool
 prop_Expr expr = case expr of
-  Pow _ n -> n >= 0
+  Pow n -> n >= 0
   _       -> True
 
 
@@ -50,8 +51,10 @@ e2 = Op MulOp (Num 2) (Num 3)
 e3 = Op MulOp (Num 2) (Num (-3))
 e4 = Op AddOp (Num 2) (Num 3)
 e5 = Op AddOp (Num 2) (Num (-3))
-e6 = Pow (Num 2) 3
-e7 = Pow (Num 2) (-3)
+e6 = Pow 3
+e7 = Pow 2
+e8 = Op AddOp (Pow 2) (Op AddOp (Pow 3) (Num 1))
+
 
 --------------------------------------------------------------------------------
 -- * A3
@@ -65,10 +68,9 @@ instance Show Expr where
       showExpr :: Expr -> String
       showExpr expr = case expr of
         Num n               -> if n < 0 then "(" ++ show n ++ ")" else do show n
-        Op AddOp expr expr' -> showExpr expr ++ "+" ++ showExpr expr' 
-        Op MulOp expr expr' -> showExpr expr ++ "*" ++ showExpr expr' 
-        Pow expr n          -> showExpr expr ++ "^" ++ "(" ++ show n ++ ")"
-
+        Op AddOp expr expr' -> showExpr expr ++ " + " ++ showExpr expr' 
+        Op MulOp expr expr' -> showExpr expr ++ " * " ++ showExpr expr' 
+        Pow n               -> if n == 1 then "x" else do "x^" ++ show n 
 --------------------------------------------------------------------------------
 -- * A4
 -- Make 'Expr' and instance of 'Arbitrary'.
@@ -87,7 +89,6 @@ instance Arbitrary Expr
 genExpr :: Int -> Gen Expr
 genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
   where
-    genOp :: Gen Expr
     genOp = let n = size `div` 2 in do
       o <- elements [AddOp, MulOp]
       x <- genExpr n
@@ -96,14 +97,17 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
 
     genNum :: Gen Expr
     genNum = do
-      n <- choose (0, 100)
+      n <- choose (1, 5)
       return (Num n)
 
     genPow :: Gen Expr
     genPow = let n = size `div` 2 in do
-      ex <- genExpr n
-      n <- choose (0, 100)
-      return(Pow ex n)
+      n <- choose (1, 5)
+      return(Pow n)
+    
+  {-   genVar :: Gen Expr
+    genVar = do
+      return (Var "x") -}
 
 --------------------------------------------------------------------------------
 -- * A5
@@ -111,7 +115,12 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
 -- evaluates it.
 
 eval :: Int -> Expr -> Int
-eval = undefined
+eval v expr = case expr of
+  Num n -> n
+  Op AddOp e e' -> eval v e + eval v e'
+  Op MulOp e e' -> eval v e * eval v e'
+  Pow n -> v^n
+
 
 --------------------------------------------------------------------------------
 -- * A6
@@ -120,7 +129,23 @@ eval = undefined
 -- by solving the smaller problems and combining them in the right way. 
 
 exprToPoly :: Expr -> Poly
-exprToPoly = undefined
+-- exprToPoly (Op AddOp e e') = 
+exprToPoly (Num n) = fromList[n]
+
+
+{- 
+
+x^2 + x^3 + 1 
+Op AddOp (Pow 2) (Op addOp (Pow 3) (Num 1))
+ -}
+
+listify :: Expr -> [[Int]]
+listify (Op _ e e') = listify e ++ listify e'
+listify (Pow n) = [1 : replicate n 0]
+listify (Num n) = [[0]]
+
+
+
 
 -- Define (and check) @prop_exprToPoly@, which checks that evaluating the
 -- polynomial you get from @exprToPoly@ gives the same answer as evaluating
