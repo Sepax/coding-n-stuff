@@ -50,7 +50,9 @@ instance Show Expr where
   show (Num n)          = show n
   show (Op AddOp e1 e2) = show e1 ++ " + " ++ show e2
   show (Op MulOp e1 e2) = show e1 ++ " * " ++ show e2
-  show (Pwr e n)        = show e ++ "^" ++ show n
+  show (Pwr e n)        = if n == 1 then show e 
+                          else show e ++ "^(" ++ show n ++ ")"
+
 
 
 --------------------------------------------------------------------------------
@@ -65,7 +67,29 @@ instance Show Expr where
 -- could use to find a smaller counterexample for failing tests.
 
 instance Arbitrary Expr
-  where arbitrary = undefined
+  where 
+    arbitrary = sized genExpr
+     
+genExpr :: Int -> Gen Expr
+genExpr size = frequency [(1, genNum), (size, genOp), (size, genPwr)]
+  where
+    genNum :: Gen Expr
+    genNum = do
+      n <- choose (0, 100)
+      return (Num n)
+
+    genOp :: Gen Expr
+    genOp = let n = size `div` 2 in do
+      o <- elements [AddOp, MulOp]
+      x <- genExpr n
+      y <- genExpr n
+      return (Op o x y)
+
+    genPwr :: Gen Expr
+    genPwr = let n = size `div` 2 in do
+      ex <- genExpr n
+      n <- choose (0, 100)
+      return(Pwr ex n)
 
 --------------------------------------------------------------------------------
 -- * A5
