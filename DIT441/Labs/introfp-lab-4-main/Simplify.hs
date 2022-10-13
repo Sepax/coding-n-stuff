@@ -61,7 +61,7 @@ e8 = Op MulOp (Pow 3) (Op AddOp (Pow 2) (Pow 1))
 -- lecture). You can use Haskell notation for powers: x^2. You should show x^1 
 -- as just x. 
 
-instance Show Expr where
+{- instance Show Expr where
   show = showExpr
     where
       showExpr :: Expr -> String
@@ -72,7 +72,21 @@ instance Show Expr where
         Pow n               -> if n == 1 then "x" else "x^" ++ show n
         where
           showFactor e@(Op AddOp x y) = "(" ++ showExpr e ++ ")"
-          showFactor e           = showExpr e
+          showFactor e           = showExpr e -}
+ 
+instance Show Expr where
+  show = showExpr
+    where
+      showExpr :: Expr -> String
+      showExpr expr = case expr of
+        Num n                 -> if n < 0 then "(" ++ show n ++ ")" else show n
+        Op AddOp expr expr'   -> showExpr expr ++ " + " ++ showExpr expr' 
+        Op MulOp expr expr'   -> showFactor expr ++ " * " ++ showFactor expr' 
+        Pow n                 -> if n == 1 then "x" else "x^" ++ show n
+        where
+          showFactor e@(Op AddOp x y) = "(" ++ showExpr e ++ ")"
+          showFactor e           = showExpr e  
+
 
 --------------------------------------------------------------------------------
 -- * A4
@@ -150,42 +164,40 @@ prop_exprToPoly n e = eval n e == evalPoly n (exprToPoly e)
 -- Now define the function going in the other direction.
 
 -- Example Poly
-p1 = fromList [1,1,0,0]
+p1 = fromList [1,0,0]
+
 
 polyToExpr :: Poly -> Expr
-polyToExpr = listToExpr . toList
-  where
-    listToExpr :: [Int] -> Expr
-    listToExpr [] = Num 0
-    listToExpr l@(x:xs)
-      | x == 0 = listToExpr xs
-      | x == 1 = Op AddOp (Pow (length l-1)) (listToExpr xs)
-      | otherwise = Op AddOp (Op MulOp (Num x) (Pow (length l-1))) (listToExpr xs)
+polyToExpr p
+  | p == 0 = Num 0
+  | x == 0 && (x:xs) /= [] = polyToExpr rest
+  | x == 1 && (x:xs) /= [] = Op AddOp pwr (polyToExpr rest)
+  | (x:xs) /= [] = Op AddOp (Op MulOp (Num x) pwr) (polyToExpr rest)
+  | otherwise = Op MulOp (Num x) pwr
+    where l@(x:xs) = toList p
+          rest = fromList xs
+          pwr = Pow (length l-1)
+
 
 polyToExpr' :: Poly -> Expr
 polyToExpr' p
-  | null l = Num 0
-  | x == 0 = polyToExpr' rest
-  | x == 1 = Op AddOp (Pow (length l-1)) (polyToExpr' rest)
-  | otherwise = Op AddOp (Op MulOp (Num x) (Pow (length l-1))) (polyToExpr' rest)
-    where l@(x:xs) = toList p
-          rest = fromList xs
+  | p == 0 = Num 0
+  | x == 0 = rest
+  | x == 1 = Op AddOp pwr rest
+  | otherwise = case xs of
+      [] -> Num x
+      _  -> Op AddOp (Op MulOp (Num x) pwr) rest
+  where l@(x:xs) = toList p
+        rest = polyToExpr' (fromList xs)
+        pwr = Pow (length l-1)
+ 
 
-polyToExpr'' :: Poly -> Expr
-polyToExpr'' p = case x:xs of
-  []     -> Num 0
-  (0:xs) -> polyToExpr'' rest
-  (1:xs) -> Op AddOp (Pow (length (x:xs)-1)) (polyToExpr'' rest)
-  _      -> Op AddOp (Op MulOp (Num x) (Pow (length (x:xs)-1))) (polyToExpr'' rest)
-  where
-    x:xs = toList p
-    rest = fromList xs
 
 
 -- Write (and check) a quickCheck property for this function similar to
 -- question 6. 
-
-prop_polyToExpr = undefined
+prop_polyToExpr :: Int -> Poly -> Bool
+prop_polyToExpr n p = eval n (polyToExpr p) == evalPoly n p
 
 --------------------------------------------------------------------------------
 -- * A8
@@ -193,7 +205,7 @@ prop_polyToExpr = undefined
 -- to a polynomial and back again.
 
 simplify :: Expr -> Expr
-simplify = undefined
+simplify = polyToExpr . exprToPoly
 
 --------------------------------------------------------------------------------
 -- * A9
@@ -201,6 +213,12 @@ simplify = undefined
 -- contain any "junk", where junk is defined to be multiplication by one or 
 -- zero, addition of zero, addition or multiplication of numbers, or x to the
 -- power of zero. (You may need to fix A7)
+
+junkExpr :: Expr
+junkExpr = Op AddOp (Num 1) (Num 0)
+
+nojunkExpr :: Expr
+nojunkExpr = Num 1
 
 prop_noJunk :: Expr -> Bool
 prop_noJunk = undefined
