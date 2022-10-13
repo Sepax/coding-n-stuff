@@ -12,13 +12,6 @@ module Simplify where
 import Poly
 import Test.QuickCheck
 
--- Test Variables
-expr1 = Num 5
-expr2 = Op AddOp (Num 6) (Num 8)
-expr3 = Op MulOp (Num 6) (Num 2)
-expr4 = Pwr 8
-expr5 = Op MulOp (Op AddOp expr1 expr4) expr3
-
 -- Use the following simple data type for binary operators
 data BinOp = AddOp | MulOp deriving Eq
 
@@ -52,10 +45,15 @@ instance Show Expr where
     where
       showExpr :: Expr -> String
       showExpr expr = case expr of
-        Num n               -> if n < 0 then "(" ++ show n ++ ")" else show n
-        Pwr n               -> if n == 1 then "x" else "x^(" ++ show n ++ ")"
-        Op AddOp expr expr' -> showExpr expr ++ " + " ++ showExpr expr' 
-        Op MulOp expr expr' -> showExpr expr ++ " * " ++ showExpr expr' 
+          Num n         -> if n < 0 then "(" ++ show n ++ ")" else show n
+          Pwr n         -> if n == 1 then "x" else "x^(" ++ show n ++ ")"
+          Op AddOp e e' -> showExpr e   ++ " + " ++ showExpr e' 
+          Op MulOp e e' -> showFactor e ++ " * " ++ showFactor e'
+            where
+              showFactor e@(Op AddOp expr expr') = "(" ++ showExpr e ++ ")"
+              showFactor e                       = showExpr e
+
+
 
 --------------------------------------------------------------------------------
 -- * A4
@@ -76,12 +74,12 @@ genExpr size = frequency [(1, genNum), (1, genPwr), (size, genOp)]
   where
     genNum :: Gen Expr
     genNum = do
-      n <- choose (0, 100)
+      n <- choose (-10, 10)
       return (Num n)
 
     genPwr :: Gen Expr
     genPwr = do
-      n <- choose (0, 10)
+      n <- choose (0, 5)
       return (Pwr n)
 
     genOp :: Gen Expr
@@ -110,13 +108,18 @@ eval x expr = case expr of
 -- by solving the smaller problems and combining them in the right way. 
 
 exprToPoly :: Expr -> Poly
-exprToPoly = undefined
+exprToPoly expr = case expr of
+  (Num n) -> fromList [n]
+  (Pwr n) -> fromList (1:replicate n 0)
+  (Op AddOp e e') -> exprToPoly e + exprToPoly e'
+  (Op MulOp e e') -> exprToPoly e * exprToPoly e'
 
 -- Define (and check) @prop_exprToPoly@, which checks that evaluating the
 -- polynomial you get from @exprToPoly@ gives the same answer as evaluating
 -- the expression.
 
 prop_exprToPoly = undefined
+
 
 --------------------------------------------------------------------------------
 -- * A7
