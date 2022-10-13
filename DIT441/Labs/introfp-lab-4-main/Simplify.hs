@@ -5,9 +5,10 @@ Copyright   : (c) TDA555/DIT441, Introduction to Functional Programming
 License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
+
+Group 9 
+Authors: Gustav Dalemo, Tim Persson, Sebastian Pålsson
 -}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use <$>" #-}
 
 module Simplify where
 
@@ -78,7 +79,7 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPwr)]
   where
     genNum :: Gen Expr
     genNum = do
-      n <- choose (0, 5)
+      n <- choose (1, 5)
       return (Num n)
 
     genOp :: Gen Expr
@@ -91,7 +92,7 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPwr)]
     genPwr :: Gen Expr
     genPwr = let n = size `div` 2 in do
       ex <- genExpr n
-      n <- choose (0, 5)
+      n <- choose (1, 5)
       return(Pwr n)
 
 --------------------------------------------------------------------------------
@@ -101,12 +102,13 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPwr)]
 
 eval :: Int -> Expr -> Int
 eval v expr = case expr of
-  Num n         -> n
-  Op AddOp e e' -> eval v e + eval v e'
-  Op MulOp e e' -> eval v e * eval v e'
-  Pwr n         -> v^n
-  Empty         -> 0
-
+  Num n            -> n
+  Op AddOp e e'    -> eval v e + eval v e'
+  Op AddOp e Empty -> eval v e
+  Op AddOp Empty e'-> eval v e'
+  Op MulOp e e'    -> eval v e * eval v e'
+  Pwr n            -> v^n
+  _                -> 0
 --------------------------------------------------------------------------------
 -- * A6
 -- Define @exprToPoly@ that converts an expression into a polynomial.
@@ -133,7 +135,8 @@ prop_exprToPoly n e = eval n e == evalPoly n (exprToPoly e)
 -- Now define the function going in the other direction.
 
 polyToExpr :: Poly -> Expr
-polyToExpr = listToExpr . toList 
+polyToExpr 0 = Num 0
+polyToExpr p = listToExpr (toList p)
   where
     listToExpr :: [Int] -> Expr
     listToExpr [a]
