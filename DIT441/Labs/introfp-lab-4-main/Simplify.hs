@@ -26,9 +26,9 @@ data BinOp = AddOp | MulOp deriving (Eq, Show)
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-type Name = String
-
 data Expr = Num Int | Op BinOp Expr Expr | Pow Expr Int | Var Name
+
+type Name = String
 
 --------------------------------------------------------------------------------
 -- * A2
@@ -52,7 +52,7 @@ e6 = Pow (Num 2) 3
 e7 = Pow (Num 2) (-3) -- This fails the invariant
 -- Expressions using variable x
 ex1 :: Expr
-ex1 = Op AddOp (Op AddOp (Pow x 2) x) (Num 5) 
+ex1 = Op AddOp (Op MulOp (Pow x 2) x) (Num 5) 
 
 
 
@@ -89,8 +89,13 @@ instance Arbitrary Expr
     arbitrary = sized genExpr
      
 genExpr :: Int -> Gen Expr
-genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
+genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow), (size, genVar)]
   where
+    genNum :: Gen Expr
+    genNum = do
+      n <- choose (0, 100)
+      return (Num n)
+
     genOp :: Gen Expr
     genOp = let n = size `div` 2 in do
       o <- elements [AddOp, MulOp]
@@ -98,16 +103,14 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
       y <- genExpr n
       return (Op o x y)
 
-    genNum :: Gen Expr
-    genNum = do
-      n <- choose (0, 100)
-      return (Num n)
-
     genPow :: Gen Expr
     genPow = let n = size `div` 2 in do
       ex <- genExpr n
       n <- choose (0, 100)
       return(Pow ex n)
+    
+    genVar :: Gen Expr
+    genVar = do return x
 
 --------------------------------------------------------------------------------
 -- * A5
@@ -116,11 +119,12 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPow)]
 
 eval :: Int -> Expr -> Int
 eval v expr = case expr of
-  Num v -> v
-  Op AddOp expr expr' -> eval v expr + eval v expr'
-  Op MulOp expr expr' -> eval v expr * eval v expr'
-  Pow expr v -> eval v expr^v
+  Num n -> n
+  Op AddOp e e' -> eval v e + eval v e'
+  Op MulOp e e' -> eval v e * eval v e'
+  Pow e n -> eval v e^n
   Var name -> v
+
 
 --------------------------------------------------------------------------------
 -- * A6
@@ -130,13 +134,14 @@ eval v expr = case expr of
 
 exprToPoly :: Expr -> Poly
 exprToPoly (Num n) = fromList [n]
-exprToPoly Op AddOp e e' = fromList []
+exprToPoly (Op AddOp e e') = undefined -- fromList [Op AddOp e e']
 
 -- Define (and check) @prop_exprToPoly@, which checks that evaluating the
 -- polynomial you get from @exprToPoly@ gives the same answer as evaluating
 -- the expression.
 prop_exprToPoly :: Int -> Expr -> Bool
 prop_exprToPoly n e = eval n e == evalPoly n (exprToPoly e) 
+
 
 --------------------------------------------------------------------------------
 -- * A7
