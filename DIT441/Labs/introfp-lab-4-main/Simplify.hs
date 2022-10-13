@@ -16,7 +16,8 @@ import Test.QuickCheck
 expr1 = Num 5
 expr2 = Op AddOp (Num 6) (Num 8)
 expr3 = Op MulOp (Num 6) (Num 2)
-expr4 = Pwr (Num 8) 2
+expr4 = Pwr 8
+expr5 = Op MulOp (Op AddOp expr1 expr4) expr3
 
 -- Use the following simple data type for binary operators
 data BinOp = AddOp | MulOp deriving Eq
@@ -30,15 +31,15 @@ data BinOp = AddOp | MulOp deriving Eq
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Num Int | Op BinOp Expr Expr | Pwr Expr Int
+data Expr = Num Int | Pwr Int | Op BinOp Expr Expr
 
 --------------------------------------------------------------------------------
 -- * A2
 -- Define the data type invariant that checks that exponents are never negative
 prop_Expr :: Expr -> Bool
 prop_Expr expr = case expr of
-  Pwr _ n -> n >= 0
-  _ -> True
+  Pwr n -> n >= 0
+  _     -> True
 
 --------------------------------------------------------------------------------
 -- * A3
@@ -47,13 +48,14 @@ prop_Expr expr = case expr of
 -- as just x. 
 
 instance Show Expr where
-  show (Num n)          = show n
-  show (Op AddOp e1 e2) = show e1 ++ " + " ++ show e2
-  show (Op MulOp e1 e2) = show e1 ++ " * " ++ show e2
-  show (Pwr e n)        = if n == 1 then show e 
-                          else show e ++ "^(" ++ show n ++ ")"
-
-
+  show = showExpr
+    where
+      showExpr :: Expr -> String
+      showExpr expr = case expr of
+        Num n               -> if n < 0 then "(" ++ show n ++ ")" else show n
+        Pwr n               -> if n == 1 then "x" else "x^(" ++ show n ++ ")"
+        Op AddOp expr expr' -> showExpr expr ++ " + " ++ showExpr expr' 
+        Op MulOp expr expr' -> showExpr expr ++ " * " ++ showExpr expr' 
 
 --------------------------------------------------------------------------------
 -- * A4
@@ -67,16 +69,20 @@ instance Show Expr where
 -- could use to find a smaller counterexample for failing tests.
 
 instance Arbitrary Expr
-  where 
+  where
     arbitrary = sized genExpr
-     
-genExpr :: Int -> Gen Expr
-genExpr size = frequency [(1, genNum), (size, genOp), (size, genPwr)]
+
+genExpr size = frequency [(1, genNum), (1, genPwr), (size, genOp)]
   where
     genNum :: Gen Expr
     genNum = do
       n <- choose (0, 100)
       return (Num n)
+
+    genPwr :: Gen Expr
+    genPwr = do
+      n <- choose (0, 10)
+      return (Pwr n)
 
     genOp :: Gen Expr
     genOp = let n = size `div` 2 in do
@@ -85,19 +91,17 @@ genExpr size = frequency [(1, genNum), (size, genOp), (size, genPwr)]
       y <- genExpr n
       return (Op o x y)
 
-    genPwr :: Gen Expr
-    genPwr = let n = size `div` 2 in do
-      ex <- genExpr n
-      n <- choose (0, 100)
-      return(Pwr ex n)
-
 --------------------------------------------------------------------------------
 -- * A5
 -- Define the @eval@ function which takes a value for x and an expression and
 -- evaluates it.
 
 eval :: Int -> Expr -> Int
-eval = undefined
+eval x expr = case expr of
+  Num n -> n
+  Pwr n -> x^n
+  Op AddOp e e' -> eval x e + eval x e'
+  Op MulOp e e' -> eval x e * eval x e'
 
 --------------------------------------------------------------------------------
 -- * A6
