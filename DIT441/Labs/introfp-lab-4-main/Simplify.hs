@@ -42,7 +42,7 @@ prop_Expr expr = case expr of
 
 
 
-e1,e2,e3,e4,e5,e6,e7 :: Expr
+e1,e2,e3,e4,e5,e6,e7,e8 :: Expr
 e1 = Num 5
 e2 = Op MulOp (Num 2) (Num 3)
 e3 = Op MulOp (Num 2) (Num (-3))
@@ -50,6 +50,7 @@ e4 = Op AddOp (Num 2) (Num 3)
 e5 = Op AddOp (Num 2) (Num (-3))
 e6 = Pow 3
 e7 = Pow (-3) -- This fails the invariant
+e8 = Op MulOp (Pow 3) (Op AddOp (Pow 2) (Pow 1))
 
 
 
@@ -127,8 +128,7 @@ eval v expr = case expr of
 -- by solving the smaller problems and combining them in the right way. 
 
 exprToPoly :: Expr -> Poly
-exprToPoly (Num n) = fromList [n]
-exprToPoly (Op AddOp e e') = fromList[exprToPoly e ++ exprToPoly e'
+exprToPoly (Pow n) = 1:replicate n 0
 
 -- Define (and check) @prop_exprToPoly@, which checks that evaluating the
 -- polynomial you get from @exprToPoly@ gives the same answer as evaluating
