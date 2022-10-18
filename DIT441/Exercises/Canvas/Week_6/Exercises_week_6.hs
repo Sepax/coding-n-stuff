@@ -1,5 +1,7 @@
 -- Exercises week 6!
 
+import Test.QuickCheck
+
 -- | 0(*). Expression and Integer Trees
 
 data Expr = Lit Int 
@@ -90,7 +92,22 @@ size (Op Sub e1 e2) = 1 + size e1 + size e2
 
 data NTree = NilT
            | Node Int NTree NTree
-           deriving (Show, Eq)
+           deriving (Show, Eq, Ord)
+
+instance Arbitrary NTree where
+    arbitrary = sized genNTree
+
+genNTree :: Int -> Gen NTree
+genNTree a = do
+    n <- choose (1,10)
+    l <- frequency [(1,genNilT), (a,genNTree (a `div` 2))]
+    r <- frequency [(1,genNilT), (a,genNTree (a `div` 2))]
+    return (Node n l r)
+
+genNilT :: Gen NTree
+genNilT = do
+    return NilT
+
 
 ex1 = 
  Node 20 (Node 10 (Node 5 NilT NilT) (Node 15 NilT NilT)) (Node 40 NilT NilT)
@@ -124,3 +141,85 @@ leftOrRightSub _ NilT = NilT
 leftOrRightSub (d:xs) (Node n l r)
     | d == 'l' = l
     | d == 'r' = r
+
+-- C(*). Define a function to decide whether a number is an element of an NTree.
+inTree :: Int -> NTree -> Bool
+inTree _ NilT = False
+inTree e (Node n l r)
+    | e == n = True
+    | otherwise = inTree e l || inTree n r
+
+-- D. Define functions to find the maximum and minimum values held in an NTree.
+maxTree :: NTree -> Maybe Int
+maxTree NilT = Nothing
+maxTree t@(Node n l r) = max (Just n) (max (maxTree l) (maxTree r))
+
+minTree :: NTree -> Maybe Int
+minTree NilT = Nothing
+minTree (Node n NilT NilT) = Just n
+minTree t@(Node n l r) = min (Just n) (min (minTree l) (minTree r))
+
+-- E(*). A tree is reflected by swapping left and right sub-trees, recursively.
+-- Define a function to reflect an NTree. What is the result of reflecting twice?
+-- Write a QuickCheck property for that!
+-- (In order to be able to test your properties, 
+-- you have to make NTree an instance of Arbitrary.)
+
+reflectTree :: NTree -> NTree
+reflectTree NilT = NilT
+reflectTree (Node n l r) = Node n (reflectTree r) (reflectTree l)
+
+prop_reflect :: NTree -> Bool
+prop_reflect t = reflectTree (reflectTree t) == t
+
+-- F. Define functions
+collapse, sort :: NTree -> [Int]
+collapse NilT = []
+collapse (Node n l r) = collapse l ++ [n] ++ collapse r
+
+sort = qsort . collapse
+ where
+    qsort :: Ord a => [a] -> [a]
+    qsort [] = []
+    qsort (x:xs) =
+        let smaller = qsort [a | a <- xs, a <= x]
+            larger  = qsort [a | a <- xs, a > x]
+        in smaller ++ [x] ++ larger
+
+prop_collapse :: NTree -> Bool
+prop_collapse t = collapse (reflectTree t) == reverse (collapse t)
+
+prop_sort :: NTree -> Bool
+prop_sort t = and $ zipWith (<=) (sort t) (tail (sort t))
+
+-- | 2(*). File Systems
+{- A file either contains data or is a directory. A directory contains other files
+(which may themselves be directories) along with a name for each one. -}
+
+-- A. 
+{- Design a data type to represent the contents of a directory. Ignore the contents
+of files: your are just trying to represent file names and the way they are
+organised into directories here. -}
+
+data File = Data String 
+          | Directory String [File]
+          deriving Show
+
+-- B. 
+{- Define a function to search for a given file name in a directory. You should
+return a path leading to a file with the given name. Thus if your directory contains
+a, b, and c, and b is a directory containing x and y, then searching for x should
+produce b/x -}
+
+type Path = String
+
+file1 = Directory "d1" [Data "a", Directory "b" [Data "x", Data "y"], Data "c"]
+
+search :: String -> File -> Path
+search s (Data x)
+    | s == x = x
+    | otherwise = "File wasn't found"
+search s (Directory x' (x:xs))
+    | s == x' = x'
+    | otherwise = x' ++ "/" ++ search s (Directory x' xs)
+
