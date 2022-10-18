@@ -1,6 +1,8 @@
 -- Exercises week 6!
 
 import Test.QuickCheck
+import Data.List (union)
+import Data.Maybe (fromJust)
 
 -- | 0(*). Expression and Integer Trees
 
@@ -201,9 +203,9 @@ prop_sort t = and $ zipWith (<=) (sort t) (tail (sort t))
 of files: your are just trying to represent file names and the way they are
 organised into directories here. -}
 
-data File = Data String 
-          | Directory String [File]
-          deriving Show
+data File = File String 
+          | Dir String [File]
+          deriving (Eq, Show)
 
 -- B. 
 {- Define a function to search for a given file name in a directory. You should
@@ -211,15 +213,75 @@ return a path leading to a file with the given name. Thus if your directory cont
 a, b, and c, and b is a directory containing x and y, then searching for x should
 produce b/x -}
 
-type Path = String
+type FileSystem = [File]
 
-file1 = Directory "d1" [Data "a", Directory "b" [Data "x", Data "y"], Data "c"]
+exampleFilSystem =
+    [ File "apa"
+    , Dir "bepa" [ File "apa", Dir "beba" [], Dir "cepa" [ File "bepa" ]]
+    , Dir "cepa" [ Dir "bepa" [], Dir "cepa" [ File "apa" ] ] 
+    ]
 
-search :: String -> File -> Path
-search s (Data x)
-    | s == x = x
-    | otherwise = "File wasn't found"
-search s (Directory x' (x:xs))
-    | s == x' = x'
-    | otherwise = x' ++ "/" ++ search s (Directory x' xs)
+search :: FileSystem -> String -> [String]
+search files name = 
+    [ name 
+    | File name' <- files
+    , name == name']
+     ++ 
+    [ dir ++ "/" ++ path 
+    | Dir dir files' <- files
+    , path <- search files' name]
 
+-- This was tough and I looked at the solutions...
+-- I didn't know we were supposed to search in a FileSystem :: [File]...?
+
+-- | 3. Exercises on Propositional Logic
+{- A proposotion is a boolean formula of one of the following forms:
+• a variable name (a string)
+• p & q (and)
+• p | q (or)
+• ~p    (not)
+where p and q are propositions. For example, p | ~p is a proposition.
+-}
+
+-- A. Design a data type Prop to represent propositions.
+
+data Prop = Var Name 
+          | And Prop Prop 
+          | Or Prop Prop
+          | Not Prop
+          deriving (Eq, Show)
+
+type Name = String
+
+exProp = And (Or (Var "p") (Var "q")) (Not (Var "p"))
+
+
+-- B. Define a function vars... 
+ 
+vars :: Prop -> [Name]
+vars (Var x)    = [x]
+vars (And p1 p2) = vars p1 `union` vars p2
+vars (Or p1 p2)  = vars p1 `union` vars p2
+vars (Not p)     = vars p
+
+truthValue :: Prop -> [(String,Bool)] -> Bool
+truthValue (Var x) pvs     = fromJust (lookup x pvs)
+truthValue (And p1 p2) pvs = truthValue p1 pvs && truthValue p2 pvs
+truthValue (Or p1 p2) pvs  = truthValue p1 pvs || truthValue p2 pvs
+truthValue (Not p) pvs     = not (truthValue p pvs)
+
+exEnv = [("p", True), ("q",True)]
+
+-- C. Define a function...
+
+tautology :: Prop -> Bool
+tautology p = and [truthValue p val | val <- allVals (vars p)]
+
+allVals :: [Name] -> [[(Name, Bool)]]
+allVals [] = [[]]
+allVals (x:xs) = [ (x,b):val |val <- allVals xs, b <- [False,True]]
+
+hamlet :: Prop
+hamlet = Or (Var "to be")  (Not (Var "to be"))
+
+--- OMG this was hard but I'm also tired... Time is 20:58... I should go home
