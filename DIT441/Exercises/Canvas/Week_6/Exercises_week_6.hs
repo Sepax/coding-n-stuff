@@ -1,7 +1,5 @@
 -- Exercises week 6!
 
-import Test.QuickCheck
-
 -- | 0(*). Expression and Integer Trees
 
 data Expr = Lit Int 
@@ -119,3 +117,10 @@ leftSub (Node n l r) = l
 rightSub :: NTree -> NTree
 rightSub NilT = NilT
 rightSub (Node n l r) = r
+
+-- Alternative that covers both cases with an extra parameter
+leftOrRightSub :: String -> NTree -> NTree
+leftOrRightSub _ NilT = NilT
+leftOrRightSub (d:xs) (Node n l r)
+    | d == 'l' = l
+    | d == 'r' = r
