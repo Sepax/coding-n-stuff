@@ -284,4 +284,18 @@ allVals (x:xs) = [ (x,b):val |val <- allVals xs, b <- [False,True]]
 hamlet :: Prop
 hamlet = Or (Var "to be")  (Not (Var "to be"))
 
---- OMG this was hard but I'm also tired... Time is 20:58... I should go home
+-- | 4. Approximating 0-solutions of functions.
+
+-- Define a function solve0
+solve0 :: (Double -> Double) -> (Double,Double) -> Double
+solve0 f (a,b)
+    | f x =? x           = x
+    | a == b             = error "no solution found!"
+    | f a > 0 || f b < 0 = error "interval does not contain 0!"
+    | f x < 0            = solve0 f (a,x)
+    | f x > 0            = solve0 f (x,b)
+ where
+    x   = (a + b) / 2
+    x =? y = abs (x-y) < 0.0000000001
+    
+-- This is not working... 
