@@ -73,13 +73,12 @@ instance Show Expr where
       showExpr :: Expr -> String
       showExpr expr = case expr of
         Num n                 -> if n < 0 then "(" ++ show n ++ ")" else show n
-        Op AddOp expr Empty   -> showExpr expr
-        Op AddOp expr expr'   -> showExpr expr ++ " + " ++ showExpr expr' 
-        Op MulOp expr expr'   -> showFactor expr ++ " * " ++ showFactor expr' 
+        Op AddOp e1 e2        -> showExpr e1 ++ " + " ++ showExpr e2 
+        Op MulOp e1 e2        -> showFactor e1 ++ " * " ++ showFactor e2 
         Pwr n                 -> if n == 1 then "x" else "x^" ++ show n
         where
           showFactor e@(Op AddOp x y) = "(" ++ showExpr e ++ ")"
-          showFactor e           = showExpr e  
+          showFactor e                = showExpr e
 
 
 --------------------------------------------------------------------------------
@@ -127,8 +126,6 @@ eval :: Int -> Expr -> Int
 eval v expr = case expr of
   Num n            -> n
   Op AddOp e e'    -> eval v e + eval v e'
-  Op AddOp e Empty -> eval v e
-  Op AddOp Empty e'-> eval v e'
   Op MulOp e e'    -> eval v e * eval v e'
   Pwr n            -> v^n
   _                -> 0
@@ -164,11 +161,14 @@ polyToExpr p = listToExpr (toList p)
     listToExpr :: [Int] -> Expr
     listToExpr [a]
       | a == 0 = Empty
-      | otherwise = Num a     
+      | otherwise = Num a
     listToExpr l@(x:xs)
       | x == 0    = listToExpr xs
       | x == 1    = Op AddOp (Pwr (length l-1)) (listToExpr xs)
       | otherwise = Op AddOp (Op MulOp (Num x) (Pwr (length l-1))) (listToExpr xs)
+
+polyToExpr' :: Poly -> Expr
+polyToExpr' 0 = Num 0
 
 -- Write (and check) a quickCheck property for this function similar to
 -- question 6. 
