@@ -28,7 +28,7 @@ data BinOp = AddOp | MulOp deriving (Eq, Show)
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Num Int | Op BinOp Expr Expr | Pwr Int | Empty deriving Eq
+data Expr = Num Int | Op BinOp Expr Expr | Pwr Int deriving Eq
 
 -- Smart contructors
 add :: Expr -> Expr -> Expr
@@ -58,9 +58,6 @@ prop_Expr expr = case expr of
   Num _      -> True
   Op _ e1 e2 -> prop_Expr e1 && prop_Expr e2
 
--- This should return False
-propEx :: Expr
-propEx = Op AddOp (Pwr(-3)) (Num 1)
 
 --------------------------------------------------------------------------------
 -- * A3
@@ -128,7 +125,7 @@ eval v expr = case expr of
   Op AddOp e e'    -> eval v e + eval v e'
   Op MulOp e e'    -> eval v e * eval v e'
   Pwr n            -> v^n
-  _                -> 0
+
 --------------------------------------------------------------------------------
 -- * A6
 -- Define @exprToPoly@ that converts an expression into a polynomial.
@@ -137,9 +134,8 @@ eval v expr = case expr of
 
 exprToPoly :: Expr -> Poly
 exprToPoly expr = case expr of
-  Empty   -> fromList []
-  (Num n) -> fromList [n]
-  (Pwr n) -> fromList (1:replicate n 0)
+  (Num n)         -> fromList [n]
+  (Pwr n)         -> fromList (1:replicate n 0)
   (Op AddOp e e') -> exprToPoly e + exprToPoly e'
   (Op MulOp e e') -> exprToPoly e * exprToPoly e'
 
@@ -159,16 +155,12 @@ polyToExpr 0 = Num 0
 polyToExpr p = listToExpr (toList p)
   where
     listToExpr :: [Int] -> Expr
-    listToExpr [a]
-      | a == 0 = Empty
-      | otherwise = Num a
+    listToExpr [] = Num 0
     listToExpr l@(x:xs)
       | x == 0    = listToExpr xs
-      | x == 1    = Op AddOp (Pwr (length l-1)) (listToExpr xs)
-      | otherwise = Op AddOp (Op MulOp (Num x) (Pwr (length l-1))) (listToExpr xs)
+      | x == 1    = add (pow (length l-1)) (listToExpr xs)
+      | otherwise = add (mul (Num x) (Pwr (length l-1))) (listToExpr xs)
 
-polyToExpr' :: Poly -> Expr
-polyToExpr' 0 = Num 0
 
 -- Write (and check) a quickCheck property for this function similar to
 -- question 6. 
@@ -261,13 +253,3 @@ quiz = do
       d    <- readDifficulty
       writeDifficulty (d+1)
       quiz
-
-
-
-
- 
---------------------------------------------------------------------------------
-
-ex1 :: Expr
-ex1 = Op MulOp (Num 2) (Num 3)
-ex2 = Op AddOp (Num 2) (Num 3)
