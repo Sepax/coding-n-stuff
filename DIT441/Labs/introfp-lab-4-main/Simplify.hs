@@ -191,11 +191,17 @@ simplify = polyToExpr . exprToPoly
 -- Pwrer of zero. (You may need to fix A7)
 
 prop_noJunk :: Expr -> Bool
-prop_noJunk expr = case expr of
-  Op MulOp expr expr' -> Op MulOp expr expr' `notElem` [expr, expr']
-  Num 0               -> False
-  Pwr 0               -> False
-  _                   -> True
+prop_noJunk expr = case simplify expr of
+  Op MulOp (Num 0) e       -> False
+  Op MulOp (Num 1) e       -> False
+  Op MulOp e (Num 0)       -> False
+  Op MulOp e (Num 1)       -> False
+  Op MulOp (Num _) (Num _) -> False
+  Op AddOp (Num 0) e       -> False
+  Op AddOp e (Num 0)       -> False
+  Op AddOp (Num _) (Num _) -> False
+  Pwr 0                    -> False
+  _                        -> True
 
 --------------------------------------------------------------------------------
 -- * A10
