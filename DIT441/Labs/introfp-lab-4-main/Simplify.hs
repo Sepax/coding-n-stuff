@@ -28,7 +28,25 @@ data BinOp = AddOp | MulOp deriving (Eq, Show)
 -- x, your data type should *not* use 'String' or 'Char' anywhere, since this is
 -- not needed.
 
-data Expr = Num Int | Op BinOp Expr Expr | Pwr Int | Empty deriving Eq
+data Expr = Num Int | Op BinOp Expr Expr | Pwr Int deriving Eq
+
+-- Smart contructors
+add :: Expr -> Expr -> Expr
+add (Num 0) e = e
+add e (Num 0) = e
+add e1 e2     = Op AddOp e1 e2
+
+mul :: Expr -> Expr -> Expr
+mul (Num 0) e = Num 0
+mul e (Num 0) = Num 0
+mul (Num 1) e = e
+mul e (Num 1) = e
+mul e1 e2     = Op MulOp e1 e2
+
+pow :: Int -> Expr
+pow 0 = Num 1
+pow n = Pwr n
+
 
 --------------------------------------------------------------------------------
 -- * A2
@@ -36,8 +54,10 @@ data Expr = Num Int | Op BinOp Expr Expr | Pwr Int | Empty deriving Eq
 
 prop_Expr :: Expr -> Bool
 prop_Expr expr = case expr of
-  Pwr n -> n >= 0
-  _     -> True
+  Pwr n      -> n >= 0
+  Num _      -> True
+  Op _ e1 e2 -> prop_Expr e1 && prop_Expr e2
+
 
 --------------------------------------------------------------------------------
 -- * A3
@@ -50,13 +70,12 @@ instance Show Expr where
       showExpr :: Expr -> String
       showExpr expr = case expr of
         Num n                 -> if n < 0 then "(" ++ show n ++ ")" else show n
-        Op AddOp expr Empty   -> showExpr expr
-        Op AddOp expr expr'   -> showExpr expr ++ " + " ++ showExpr expr' 
-        Op MulOp expr expr'   -> showFactor expr ++ " * " ++ showFactor expr' 
+        Op AddOp e1 e2        -> showExpr e1 ++ " + " ++ showExpr e2 
+        Op MulOp e1 e2        -> showFactor e1 ++ " * " ++ showFactor e2 
         Pwr n                 -> if n == 1 then "x" else "x^" ++ show n
         where
           showFactor e@(Op AddOp x y) = "(" ++ showExpr e ++ ")"
-          showFactor e           = showExpr e  
+          showFactor e                = showExpr e
 
 
 --------------------------------------------------------------------------------
@@ -104,11 +123,9 @@ eval :: Int -> Expr -> Int
 eval v expr = case expr of
   Num n            -> n
   Op AddOp e e'    -> eval v e + eval v e'
-  Op AddOp e Empty -> eval v e
-  Op AddOp Empty e'-> eval v e'
   Op MulOp e e'    -> eval v e * eval v e'
   Pwr n            -> v^n
-  _                -> 0
+
 --------------------------------------------------------------------------------
 -- * A6
 -- Define @exprToPoly@ that converts an expression into a polynomial.
@@ -117,9 +134,8 @@ eval v expr = case expr of
 
 exprToPoly :: Expr -> Poly
 exprToPoly expr = case expr of
-  Empty   -> fromList []
-  (Num n) -> fromList [n]
-  (Pwr n) -> fromList (1:replicate n 0)
+  (Num n)         -> fromList [n]
+  (Pwr n)         -> fromList (1:replicate n 0)
   (Op AddOp e e') -> exprToPoly e + exprToPoly e'
   (Op MulOp e e') -> exprToPoly e * exprToPoly e'
 
@@ -139,13 +155,12 @@ polyToExpr 0 = Num 0
 polyToExpr p = listToExpr (toList p)
   where
     listToExpr :: [Int] -> Expr
-    listToExpr [a]
-      | a == 0 = Empty
-      | otherwise = Num a     
+    listToExpr [] = Num 0
     listToExpr l@(x:xs)
       | x == 0    = listToExpr xs
-      | x == 1    = Op AddOp (Pwr (length l-1)) (listToExpr xs)
-      | otherwise = Op AddOp (Op MulOp (Num x) (Pwr (length l-1))) (listToExpr xs)
+      | x == 1    = add (pow (length l-1)) (listToExpr xs)
+      | otherwise = add (mul (Num x) (Pwr (length l-1))) (listToExpr xs)
+
 
 -- Write (and check) a quickCheck property for this function similar to
 -- question 6. 
@@ -168,11 +183,17 @@ simplify = polyToExpr . exprToPoly
 -- Pwrer of zero. (You may need to fix A7)
 
 prop_noJunk :: Expr -> Bool
-prop_noJunk expr = case expr of
-  Op MulOp expr expr' -> Op MulOp expr expr' `notElem` [expr, expr']
-  Num 0               -> False
-  Pwr 0               -> False
-  _                   -> True
+prop_noJunk expr = case simplify expr of
+  Op MulOp (Num 0) e       -> False
+  Op MulOp (Num 1) e       -> False
+  Op MulOp e (Num 0)       -> False
+  Op MulOp e (Num 1)       -> False
+  Op MulOp (Num _) (Num _) -> False
+  Op AddOp (Num 0) e       -> False
+  Op AddOp e (Num 0)       -> False
+  Op AddOp (Num _) (Num _) -> False
+  Pwr 0                    -> False
+  _                        -> True
 
 --------------------------------------------------------------------------------
 -- * A10
@@ -232,9 +253,3 @@ quiz = do
       d    <- readDifficulty
       writeDifficulty (d+1)
       quiz
-
-
-
-
- 
---------------------------------------------------------------------------------
