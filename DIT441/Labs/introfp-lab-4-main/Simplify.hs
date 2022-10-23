@@ -54,8 +54,13 @@ pow n = Pwr n
 
 prop_Expr :: Expr -> Bool
 prop_Expr expr = case expr of
-  Pwr n -> n >= 0
-  _     -> True
+  Pwr n      -> n >= 0
+  Num _      -> True
+  Op _ e1 e2 -> prop_Expr e1 && prop_Expr e2
+
+-- This should return False
+propEx :: Expr
+propEx = Op AddOp (Pwr(-3)) (Num 1)
 
 --------------------------------------------------------------------------------
 -- * A3
