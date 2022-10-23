@@ -30,6 +30,24 @@ data BinOp = AddOp | MulOp deriving (Eq, Show)
 
 data Expr = Num Int | Op BinOp Expr Expr | Pwr Int | Empty deriving Eq
 
+-- Smart contructors
+add :: Expr -> Expr -> Expr
+add (Num 0) e = e
+add e (Num 0) = e
+add e1 e2     = Op AddOp e1 e2
+
+mul :: Expr -> Expr -> Expr
+mul (Num 0) e = Num 0
+mul e (Num 0) = Num 0
+mul (Num 1) e = e
+mul e (Num 1) = e
+mul e1 e2     = Op MulOp e1 e2
+
+pow :: Int -> Expr
+pow 0 = Num 1
+pow n = Pwr n
+
+
 --------------------------------------------------------------------------------
 -- * A2
 -- Define the data type invariant that checks that exponents are never negative
@@ -238,3 +256,7 @@ quiz = do
 
  
 --------------------------------------------------------------------------------
+
+ex1 :: Expr
+ex1 = Op MulOp (Num 2) (Num 3)
+ex2 = Op AddOp (Num 2) (Num 3)
